@@ -4,7 +4,7 @@ import tailwindcss from "@tailwindcss/vite";
 
 // https://vite.dev/config/
 export default defineConfig({
-  base: '/RFID-ERP-Dashboard-with-AI-Chatbot/', // Replace with your repo name
+  base: './',
   server: {
     port: 2000,
     host: true

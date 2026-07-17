@@ -461,9 +461,9 @@ const Graph = ({ date_from, date_to }: GraphProps) => {
                     textAnchor="end"
                     height={60}
                     interval={0}
-                    tick={{ fill: '#555', fontSize: { xs: 7, sm: 9, md: 11 } }}
+                    tick={{ fill: '#555', fontSize: 10 }}
                   />
-                  <YAxis tick={{ fill: '#555', fontSize: { xs: 7, sm: 9, md: 11 } }} />
+                  <YAxis tick={{ fill: '#555', fontSize: 10 }} />
                   <Tooltip content={<CustomTooltip />} />
                   <Bar dataKey="production_qty" barSize={20}>
                     {topWorkers?.map((entry: WorkerPerformance, index: number) => (
@@ -512,9 +512,9 @@ const Graph = ({ date_from, date_to }: GraphProps) => {
                     textAnchor="end"
                     height={60}
                     interval={0}
-                    tick={{ fill: '#555', fontSize: { xs: 7, sm: 9, md: 11 } }}
+                    tick={{ fill: '#555', fontSize: 10 }}
                   />
-                  <YAxis tick={{ fill: '#555', fontSize: { xs: 7, sm: 9, md: 11 } }} />
+                  <YAxis tick={{ fill: '#555', fontSize: 10 }} />
                   <Tooltip content={<CustomTooltip />} />
                   <Bar dataKey="production_qty" barSize={20}>
                     {lowWorkers?.map((entry: WorkerPerformance, index: number) => (
@@ -634,13 +634,13 @@ const Graph = ({ date_from, date_to }: GraphProps) => {
                     angle={-45}
                     textAnchor="end"
                     height={55}
-                    tick={{ fill: '#666', fontSize: { xs: 7, sm: 9, md: 11 } }}
+                    tick={{ fill: '#666', fontSize: 10 }}
                   />
                   <YAxis
                     dataKey="efficiency"
                     domain={[0, 200]}
                     label={{ value: 'Efficiency %', angle: -90, position: 'insideLeft', style: { fontSize: '0.65rem' } }}
-                    tick={{ fill: '#666', fontSize: { xs: 7, sm: 9, md: 11 } }}
+                    tick={{ fill: '#666', fontSize: 10 }}
                   />
                   <Tooltip content={<ScatterTooltip />} />
                   <Scatter
@@ -676,12 +676,12 @@ const Graph = ({ date_from, date_to }: GraphProps) => {
                   margin={{ top: 10, right: 10, left: 80, bottom: 10 }}
                 >
                   <CartesianGrid strokeDasharray="5 5" stroke="rgba(25,118,210,0.2)" />
-                  <XAxis type="number" tick={{ fill: '#666', fontSize: { xs: 7, sm: 9, md: 11 } }} />
+                  <XAxis type="number" tick={{ fill: '#666', fontSize: 10 }} />
                   <YAxis
                     dataKey="line_code"
                     type="category"
                     width={60}
-                    tick={{ fontSize: { xs: 7, sm: 9, md: 11 }, fill: '#666' }}
+                    tick={{ fontSize: 10, fill: '#666' }}
                   />
                   <Tooltip content={<LineBarTooltip />} />
                   <Bar dataKey="actual" barSize={16}>
@@ -828,9 +828,9 @@ const Graph = ({ date_from, date_to }: GraphProps) => {
                       textAnchor="end"
                       height={50}
                       interval={0}
-                      tick={{ fill: '#666', fontSize: { xs: 7, sm: 9, md: 11 } }}
+                      tick={{ fill: '#666', fontSize: 10 }}
                     />
-                    <YAxis tick={{ fill: '#666', fontSize: { xs: 7, sm: 9, md: 11 } }} />
+                    <YAxis tick={{ fill: '#666', fontSize: 10 }} />
                     <Tooltip content={<OperationTooltip />} />
                     <Legend wrapperStyle={{ fontSize: '0.6rem', paddingTop: '5px' }} />
                     <Bar dataKey="target" stackId="a" fill="#ffb74d" name="Target" barSize={20} />
@@ -863,12 +863,12 @@ const Graph = ({ date_from, date_to }: GraphProps) => {
                   margin={{ top: 10, right: 10, left: 90, bottom: 10 }}
                 >
                   <CartesianGrid strokeDasharray="5 5" stroke="rgba(46,125,50,0.2)" />
-                  <XAxis type="number" tick={{ fill: '#666', fontSize: { xs: 7, sm: 9, md: 11 } }} />
+                  <XAxis type="number" tick={{ fill: '#666', fontSize: 10 }} />
                   <YAxis
                     dataKey="displayName"
                     type="category"
                     width={70}
-                    tick={{ fontSize: { xs: 6, sm: 8, md: 10 }, fill: '#666' }}
+                    tick={{ fontSize: 10, fill: '#666' }}
                   />
                   <Tooltip content={<TopLowLineTooltip />} />
                   <Bar dataKey="production_qty" barSize={16} radius={[0, 6, 6, 0]}>
@@ -905,12 +905,12 @@ const Graph = ({ date_from, date_to }: GraphProps) => {
                   margin={{ top: 10, right: 10, left: 90, bottom: 10 }}
                 >
                   <CartesianGrid strokeDasharray="5 5" stroke="rgba(237,108,2,0.2)" />
-                  <XAxis type="number" tick={{ fill: '#666', fontSize: { xs: 7, sm: 9, md: 11 } }} />
+                  <XAxis type="number" tick={{ fill: '#666', fontSize: 10 }} />
                   <YAxis
                     dataKey="displayName"
                     type="category"
                     width={70}
-                    tick={{ fontSize: { xs: 6, sm: 8, md: 10 }, fill: '#666' }}
+                    tick={{ fontSize: 10, fill: '#666' }}
                   />
                   <Tooltip content={<TopLowLineTooltip />} />
                   <Bar dataKey="production_qty" barSize={16} radius={[0, 6, 6, 0]}>
