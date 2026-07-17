@@ -9,12 +9,22 @@ export default defineConfig({
     port: 2000,
     host: true
   },
-  plugins: [
-    react(),
-    tailwindcss()
-  ],
+plugins: [
+  tailwindcss(),
+  react()
+],
   build: {
-    outDir: 'docs',  // Changed from 'dist' to 'docs' for GitHub Pages
-    sourcemap: false,
+  outDir: 'docs',
+  sourcemap: false,
+  chunkSizeWarningLimit: 1000,
+  rollupOptions: {
+    output: {
+      manualChunks: {
+        vendor: ['react', 'react-dom', '@mui/material', '@mui/icons-material'],
+        recharts: ['recharts'],
+        mui: ['@mui/x-data-grid', '@mui/x-date-pickers']
+      }
+    }
   }
+}
 });
