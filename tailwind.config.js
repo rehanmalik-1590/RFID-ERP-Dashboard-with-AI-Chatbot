@@ -1,4 +1,3 @@
-// tailwind.config.js - Root folder mein (project ke root mein)
 /** @type {import('tailwindcss').Config} */
 export default {
   content: [
