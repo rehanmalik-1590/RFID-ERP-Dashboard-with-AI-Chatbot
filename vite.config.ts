@@ -14,7 +14,7 @@ export default defineConfig({
     tailwindcss()
   ],
   build: {
-    outDir: 'dist',
+    outDir: 'docs',  // Changed from 'dist' to 'docs' for GitHub Pages
     sourcemap: false,
   }
 });
