@@ -1,16 +1,80 @@
-// ChatBotAI.tsx - Complete File with All Errors Resolved
+// ChatBotAI.tsx - Complete File with Roman Urdu Translations
 import React, { useState, useRef, useEffect, useMemo } from 'react';
-import { Close as CloseIcon, Send as SendIcon, SmartToy as BotIcon, Person as PersonIcon, AutoAwesome as AutoAwesomeIcon, Psychology as PsychologyIcon, RocketLaunch as RocketIcon, Mic as MicIcon } from '@mui/icons-material';
+import { Close as CloseIcon, Send as SendIcon, SmartToy as BotIcon, Person as PersonIcon, AutoAwesome as AutoAwesomeIcon, Psychology as PsychologyIcon, RocketLaunch as RocketIcon, Mic as MicIcon, Translate as TranslateIcon, VolumeUp as VolumeUpIcon } from '@mui/icons-material';
 import { Paper, Typography, Box, Select, MenuItem, FormControl, InputLabel, IconButton, Tooltip, CircularProgress, Switch, FormControlLabel, Chip } from '@mui/material';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer, PieChart, Pie, Cell, LineChart, Line } from 'recharts';
 import { useGetAllKpiData, useGetAllFilterData, useWorkersPerformance, usegetDepartmentWise, useGetLineEfficiency, useGetLineOperationScanning } from '../services/api';
 
 // ===== IMPORT SERVICES =====
-import { processQuery, getCompanyName, getDepartmentEmoji, getStatusIcon, formatAnalysisResponse } from '../services/chatbotQueryProcessor';
-import { formatDepartmentAnalysis, formatLineBottleneckAnalysis, formatWorkerOptimization, formatCompanyComparison, formatTrendAnalysis, formatQualityAnalysis, formatTargetAnalysis, formatSmartRecommendations, type FormattedResponse } from '../services/chatbotResponseFormatter';
-import { suggestNextQueries, type VisualizationResponse } from '../services/chatbotVisualizationHandler';
+import { formatDepartmentAnalysis, formatLineBottleneckAnalysis, formatCompanyComparison, formatTrendAnalysis, formatQualityAnalysis, formatTargetAnalysis, formatSmartRecommendations, type FormattedResponse } from '../services/chatbotResponseFormatter';
 import VoiceInputButton from './VoiceInputButton';
 import { initVoiceRecognition, startVoiceListening, stopVoiceListening, checkVoiceSupport, type VoiceState, type VoiceConfig } from '../services/chatbotVoiceHandler';
+
+// ===== TRANSLATIONS (Roman Urdu) =====
+const translations = {
+  en: {
+    welcome: '✨ **Welcome to AI Assistant!**\n\nI can help you with everything:\n\n📊 **Dashboard KPIs** - Production, Efficiency, Quality\n📋 **Table Data** - Workers, Companies, Departments\n👥 **Workers** - Top/Low performers with exact count\n📈 **Graphs** - Bar, Pie, Line charts for any data\n💡 **Analytics** - Departments, Bottlenecks, Trends\n🏢 **Comparisons** - Companies, Lines, Departments\n\n🔊 **Voice:** Click mic or enable "Auto Voice"\n\n💬 **Try:** "top 5 workers bar chart", "best line", "company comparison pie chart"',
+    help: '🤖 **Main in cheezon mein madad kar sakta hoon:**\n\n📊 **KPIs:** "total production", "all kpis", "efficiency"\n👥 **Workers:** "top 3 workers", "low 2 workers bar chart"\n🏢 **Lines:** "best line", "line L001 workers"\n📈 **Comparisons:** "company comparison pie chart", "compare lines"\n📋 **Data:** "show table", "workers list"\n💡 **Analytics:** "analyze departments", "quality analysis"\n🔊 **Voice:** Mic click karein ya "Auto Voice" enable karein\n📝 **Exact Count:** "top 2 workers" exact 2 workers deta hai',
+    greeting: '👋 Hello! Main kya help kar sakta hoon?\n\n💬 **Try:** "top 5 workers", "best line", "company comparison pie chart"',
+    goodbye: '👋 **Goodbye!** Chat band kar raha hoon... Have a great day!',
+    noData: '❌ Koi data available nahi hai.',
+    loading: '⚠️ Data load ho raha hai. Please wait...',
+    close: 'close',
+    notFound: '❓ **Mujhe samajh nahi aaya. Ye try karein:**\n\n👥 **Workers:** "top 3 workers", "top 2 workers bar chart"\n🏢 **Lines:** "best line", "line L001 workers"\n📈 **Comparisons:** "company comparison", "company comparison pie chart"\n📊 **KPIs:** "total production", "all kpis"\n📋 **Data:** "show table", "workers list"\n💡 **Analytics:** "analyze departments", "quality analysis"\n🔊 **Voice:** Mic click karein ya Auto Voice enable karein\n\n💬 **Ya "close" type karein exit karne ke liye**',
+    sorry: '😅 **Sorry sir, mujhe samajh nahi aaya.** Please in mein se koi try karein:\n\n👥 "top 5 workers"\n🏢 "best line"\n📊 "all kpis"\n📈 "company comparison pie chart"\n📋 "show table"\n💡 "analyze departments"',
+    workers: '🏆 TOP {count} Workers',
+    lowWorkers: '📉 LOW {count} Workers',
+    line: '🏢 Best Line: {line}',
+    worstLine: '🏢 Worst Line: {line}',
+    comparison: '🏢 Company Comparison',
+    deptComparison: '🏢 Department Comparison',
+    allKpis: '📊 All KPIs',
+    dashboard: '📊 Dashboard KPIs',
+    records: '📋 {count} Records show kar raha hoon',
+    totalRecords: '📊 Total Records: {count}',
+    tip: '💡 **Tip:** "bar chart", "pie chart", ya "line chart" add karein graph ke liye!',
+    tipGraph: '💡 **Tip:** Graph dekhne ke liye "graph" type karein!',
+    tipWorkers: '💡 **Tip:** Saare workers dekhne ke liye "line {code} workers" poochhein',
+    workerInfo: '👤 Worker Details: {name}',
+    production: '📊 Production: {qty} Qty',
+    efficiency: '📊 Efficiency: {eff}%',
+    actual: '📈 Actual: {actual}',
+    target: '🎯 Target: {target}',
+    workersOnLine: '👥 Is line par workers: **{count}**',
+    stopMsg: '🛑 **Ruk gaya!** Kuch aur poochna hai?',
+  },
+  ur: {
+    welcome: '✨ **AI Assistant mein Khush Amdeed!**\n\nMain har cheez mein madad kar sakta hoon:\n\n📊 **Dashboard KPIs** - Production, Efficiency, Quality\n📋 **Table Data** - Workers, Companies, Departments\n👥 **Workers** - Top/Low performers exact count ke saath\n📈 **Graphs** - Bar, Pie, Line charts kisi bhi data ke liye\n💡 **Analytics** - Departments, Bottlenecks, Trends\n🏢 **Comparisons** - Companies, Lines, Departments\n\n🔊 **Voice:** Mic click karein ya "Auto Voice" enable karein\n\n💬 **Try:** "top 5 workers bar chart", "best line", "company comparison pie chart"',
+    help: '🤖 **Main in cheezon mein madad kar sakta hoon:**\n\n📊 **KPIs:** "total production", "all kpis", "efficiency"\n👥 **Workers:** "top 3 workers", "low 2 workers bar chart"\n🏢 **Lines:** "best line", "line L001 workers"\n📈 **Comparisons:** "company comparison pie chart", "compare lines"\n📋 **Data:** "show table", "workers list"\n💡 **Analytics:** "analyze departments", "quality analysis"\n🔊 **Voice:** Mic click karein ya "Auto Voice" enable karein\n📝 **Exact Count:** "top 2 workers" exact 2 workers deta hai',
+    greeting: '👋 Hello! Main kya help kar sakta hoon?\n\n💬 **Try:** "top 5 workers", "best line", "company comparison pie chart"',
+    goodbye: '👋 **Goodbye!** Chat band kar raha hoon... Have a great day!',
+    noData: '❌ Koi data available nahi hai.',
+    loading: '⚠️ Data load ho raha hai. Please wait...',
+    close: 'close',
+    notFound: '❓ **Mujhe samajh nahi aaya. Ye try karein:**\n\n👥 **Workers:** "top 3 workers", "top 2 workers bar chart"\n🏢 **Lines:** "best line", "line L001 workers"\n📈 **Comparisons:** "company comparison", "company comparison pie chart"\n📊 **KPIs:** "total production", "all kpis"\n📋 **Data:** "show table", "workers list"\n💡 **Analytics:** "analyze departments", "quality analysis"\n🔊 **Voice:** Mic click karein ya Auto Voice enable karein\n\n💬 **Ya "close" type karein exit karne ke liye**',
+    sorry: '😅 **Sorry sir, mujhe samajh nahi aaya.** Please in mein se koi try karein:\n\n👥 "top 5 workers"\n🏢 "best line"\n📊 "all kpis"\n📈 "company comparison pie chart"\n📋 "show table"\n💡 "analyze departments"',
+    workers: '🏆 TOP {count} Workers',
+    lowWorkers: '📉 LOW {count} Workers',
+    line: '🏢 Best Line: {line}',
+    worstLine: '🏢 Worst Line: {line}',
+    comparison: '🏢 Company Comparison',
+    deptComparison: '🏢 Department Comparison',
+    allKpis: '📊 All KPIs',
+    dashboard: '📊 Dashboard KPIs',
+    records: '📋 {count} Records show kar raha hoon',
+    totalRecords: '📊 Total Records: {count}',
+    tip: '💡 **Tip:** "bar chart", "pie chart", ya "line chart" add karein graph ke liye!',
+    tipGraph: '💡 **Tip:** Graph dekhne ke liye "graph" type karein!',
+    tipWorkers: '💡 **Tip:** Saare workers dekhne ke liye "line {code} workers" poochhein',
+    workerInfo: '👤 Worker Details: {name}',
+    production: '📊 Production: {qty} Qty',
+    efficiency: '📊 Efficiency: {eff}%',
+    actual: '📈 Actual: {actual}',
+    target: '🎯 Target: {target}',
+    workersOnLine: '👥 Is line par workers: **{count}**',
+    stopMsg: '🛑 **Ruk gaya!** Kuch aur poochna hai?',
+  }
+};
 
 // ===== INTERFACES =====
 interface Message {
@@ -49,24 +113,24 @@ interface WorkerPerformance {
   production_qty: number;
 }
 
+type Language = 'en' | 'ur';
+
 // ===== MAIN COMPONENT =====
 const ChatBotAI: React.FC<{ isOpen: boolean; onClose: () => void }> = ({ isOpen, onClose }) => {
   // ===== UNIQUE ID GENERATOR =====
   const generateUniqueId = () => `${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
 
   // ===== STATES =====
+  const [language, setLanguage] = useState<Language>('en');
+  const [speakEnabled, setSpeakEnabled] = useState(false);
+  const [isSpeaking, setIsSpeaking] = useState(false);
+  const [speechQueue, setSpeechQueue] = useState<string[]>([]);
+  const [isSpeechStopped, setIsSpeechStopped] = useState(false);
+  
   const [messages, setMessages] = useState<Message[]>([
     {
       id: generateUniqueId(),
-      text: '✨ **Welcome to AI Assistant!**\n\nI can help you with everything:\n\n' +
-        '📊 **Dashboard KPIs** - Production, Efficiency, Quality\n' +
-        '📋 **Table Data** - Workers, Companies, Departments\n' +
-        '👥 **Workers** - Top/Low performers with exact count\n' +
-        '📈 **Graphs** - Bar, Pie, Line charts for any data\n' +
-        '💡 **Analytics** - Departments, Bottlenecks, Trends\n' +
-        '🏢 **Comparisons** - Companies, Lines, Departments\n\n' +
-        '🔊 **Voice:** Click mic or enable "Auto Voice"\n\n' +
-        '💬 **Try:** "top 5 workers bar chart", "best line", "company comparison pie chart"',
+      text: translations.en.welcome,
       sender: 'bot',
       timestamp: new Date(),
       type: 'success'
@@ -124,6 +188,7 @@ const ChatBotAI: React.FC<{ isOpen: boolean; onClose: () => void }> = ({ isOpen,
   // Refs
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+  const speechSynthRef = useRef<SpeechSynthesis | null>(null);
 
   // ===== FIXED DATE RANGE =====
   const fixedDateFrom = '2024-01-01';
@@ -137,6 +202,71 @@ const ChatBotAI: React.FC<{ isOpen: boolean; onClose: () => void }> = ({ isOpen,
   const { data: deptData, refetch: refetchDept, isSuccess: deptSuccess } = usegetDepartmentWise(fixedDateFrom, fixedDateTo);
   const { data: lineData, refetch: refetchLine, isSuccess: lineSuccess } = useGetLineEfficiency(fixedDateFrom, fixedDateTo);
   const { data: opData, refetch: refetchOp, isSuccess: opSuccess } = useGetLineOperationScanning(fixedDateFrom, fixedDateTo);
+
+  // ===== SPEECH SYNTHESIS =====
+  const speakText = (text: string, lang: Language = 'en') => {
+    if (!speakEnabled || !window.speechSynthesis || isSpeechStopped) return;
+    
+    const cleanText = text
+      .replace(/\*\*/g, '')
+      .replace(/[📊📋👥🏢💡🔊💬📈📉📏👤🏆⭐⚠️✅❌🔴🟡🟢💡🔧🎯]/g, '')
+      .replace(/\n/g, '. ')
+      .trim();
+    
+    if (!cleanText) return;
+    
+    window.speechSynthesis.cancel();
+    
+    const utterance = new SpeechSynthesisUtterance(cleanText);
+    utterance.lang = lang === 'ur' ? 'ur-PK' : 'en-US';
+    utterance.rate = 0.9;
+    utterance.pitch = 1;
+    utterance.volume = 1;
+    
+    utterance.onstart = () => setIsSpeaking(true);
+    utterance.onend = () => {
+      setIsSpeaking(false);
+      if (speechQueue.length > 0 && !isSpeechStopped) {
+        const next = speechQueue.shift();
+        if (next) speakText(next, lang);
+      }
+    };
+    utterance.onerror = () => setIsSpeaking(false);
+    
+    window.speechSynthesis.speak(utterance);
+  };
+
+  const stopSpeaking = () => {
+    if (window.speechSynthesis) {
+      window.speechSynthesis.cancel();
+      setIsSpeaking(false);
+      setIsSpeechStopped(true);
+      setSpeechQueue([]);
+      setTimeout(() => setIsSpeechStopped(false), 1000);
+    }
+  };
+
+  // ===== TRANSLATION HELPER =====
+  const t = (key: string, params?: any): string => {
+    let text = translations[language][key as keyof typeof translations.en] || key;
+    if (params) {
+      Object.keys(params).forEach(k => {
+        text = text.replace(`{${k}}`, params[k]);
+      });
+    }
+    return text;
+  };
+
+  // ===== UPDATE WELCOME ON LANGUAGE CHANGE =====
+  useEffect(() => {
+    if (messages.length === 1 && messages[0].id === '1') {
+      const welcomeMsg = {
+        ...messages[0],
+        text: t('welcome')
+      };
+      setMessages([welcomeMsg]);
+    }
+  }, [language]);
 
   // ===== EFFECTS =====
   useEffect(() => {
@@ -201,7 +331,7 @@ const ChatBotAI: React.FC<{ isOpen: boolean; onClose: () => void }> = ({ isOpen,
     try {
       recognitionRef.current.continuous = true;
       recognitionRef.current.interimResults = true;
-      recognitionRef.current.language = 'en-US';
+      recognitionRef.current.language = language === 'ur' ? 'ur-PK' : 'en-US';
       recognitionRef.current.onresult = (event: any) => {
         let final = '';
         for (let i = event.resultIndex; i < event.results.length; i++) {
@@ -231,7 +361,12 @@ const ChatBotAI: React.FC<{ isOpen: boolean; onClose: () => void }> = ({ isOpen,
   const handleVoiceStart = () => {
     if (!recognitionRef.current) return;
     setIsVoiceListening(true);
-    const config: VoiceConfig = { language: 'en-US', continuous: false, interimResults: true, maxAlternatives: 1 };
+    const config: VoiceConfig = { 
+      language: language === 'ur' ? 'ur-PK' : 'en-US', 
+      continuous: false, 
+      interimResults: true, 
+      maxAlternatives: 1 
+    };
     startVoiceListening(recognitionRef.current, config, (state) => setVoiceState(state), (transcript) => {
       setIsVoiceListening(false);
       if (transcript?.trim()) { setInputText(transcript); setTimeout(() => handleSendMessage(transcript), 300); }
@@ -284,8 +419,16 @@ const ChatBotAI: React.FC<{ isOpen: boolean; onClose: () => void }> = ({ isOpen,
       lineCode: null,
       workerCode: null,
       exactCount: false,
-      raw: question
+      raw: question,
+      stopSpeech: false
     };
+
+    // Check for speech stop commands
+    if (q.includes('ok enough') || q.includes('enough') || q.includes('bas karo') || q.includes('bas') || q.includes('stop') || q.includes('ruk jao') || q.includes('ruff')) {
+      result.type = 'stop_speech';
+      result.stopSpeech = true;
+      return result;
+    }
 
     // Check for close
     if (q.includes('close') || q.includes('band') || q === 'close' || q === 'ok close') {
@@ -328,7 +471,7 @@ const ChatBotAI: React.FC<{ isOpen: boolean; onClose: () => void }> = ({ isOpen,
       if (workerMatch) result.workerCode = workerMatch[1];
     }
 
-    // Extract count - EXACT number
+    // Extract count
     const countMatch = q.match(/(\d+)/);
     if (countMatch) {
       result.count = parseInt(countMatch[0]);
@@ -339,7 +482,7 @@ const ChatBotAI: React.FC<{ isOpen: boolean; onClose: () => void }> = ({ isOpen,
     if (q.includes('top') || q.includes('best') || q.includes('highest')) result.type = 'top';
     else if (q.includes('low') || q.includes('worst') || q.includes('lowest')) result.type = 'low';
     else if (q.includes('comparison') || q.includes('compare') || q.includes('vs')) result.type = 'comparison';
-    else if (q.includes('quality')) result.type = 'quality';
+    else if (q.includes('quality') || q.includes('waste')) result.type = 'quality';
     else if (q.includes('trend') || q.includes('forecast')) result.type = 'trend';
     else if (q.includes('recommendation') || q.includes('suggestion')) result.type = 'recommendation';
     else if (q.includes('target') || q.includes('goal')) result.type = 'target';
@@ -386,34 +529,37 @@ const ChatBotAI: React.FC<{ isOpen: boolean; onClose: () => void }> = ({ isOpen,
     const parsed = parseSmartQuery(question);
     const q = question.toLowerCase();
 
+    // ===== STOP SPEECH =====
+    if (parsed.stopSpeech) {
+      stopSpeaking();
+      return t('stopMsg');
+    }
+
     // ===== CLOSE =====
     if (parsed.isClose) {
+      if (speakEnabled) speakText(t('goodbye'), language);
       setTimeout(() => onClose(), 500);
-      return '👋 **Goodbye!** Closing chat... Have a great day!';
+      return t('goodbye');
     }
 
     // ===== GREETINGS =====
     if (q.includes('hi') || q.includes('hello') || q === 'hi') {
-      return '👋 Hello! How can I help you?\n\n💬 **Try:** "top 5 workers", "best line", "company comparison pie chart"';
+      const msg = t('greeting');
+      if (speakEnabled) speakText(msg, language);
+      return msg;
     }
 
     // ===== HELP =====
-    if (q.includes('help') || q.includes('what can you do')) {
-      return `🤖 **I can help you with:**\n\n` +
-        `📊 **KPIs:** "total production", "all kpis", "efficiency"\n` +
-        `👥 **Workers:** "top 3 workers", "low 2 workers bar chart"\n` +
-        `🏢 **Lines:** "best line", "line L001 workers"\n` +
-        `📈 **Comparisons:** "company comparison pie chart", "compare lines"\n` +
-        `📋 **Data:** "show table", "workers list"\n` +
-        `💡 **Analytics:** "analyze departments", "quality analysis"\n` +
-        `🔊 **Voice:** Click mic or enable Auto Voice\n` +
-        `📝 **Exact Count:** "top 2 workers" gives exactly 2 workers`;
+    if (q.includes('help') || q.includes('what can you do') || q.includes('how to use')) {
+      const msg = t('help');
+      if (speakEnabled) speakText(msg, language);
+      return msg;
     }
 
     // ===== ALL KPIS =====
     if (parsed.type === 'all_kpis' || (q.includes('total production') && !q.includes('chart') && !q.includes('graph'))) {
-      if (!apiData_KPI) return '❌ KPI data not available.';
-      let response = '📊 **All KPIs:**\n\n';
+      if (!apiData_KPI) return t('noData');
+      let response = t('allKpis') + '\n\n';
       const allFields = [
         { key: 'total_output_units', label: 'Total Output', emoji: '🏭' },
         { key: 'productivity_rate', label: 'Productivity Rate', emoji: '⚡' },
@@ -422,30 +568,26 @@ const ChatBotAI: React.FC<{ isOpen: boolean; onClose: () => void }> = ({ isOpen,
         { key: 'workforce_strength', label: 'Workforce Strength', emoji: '👥' },
         { key: 'avg_operation_capacity', label: 'Avg Operation Capacity', emoji: '📈' },
         { key: 'waste_units', label: 'Waste Units', emoji: '✂️' },
-        { key: 'planned_production', label: 'Planned Production', emoji: '🎯' },
-        { key: 'initial_production', label: 'Initial Production', emoji: '📦' },
-        { key: 'final_production', label: 'Final Production', emoji: '📦' },
-        { key: 'production_line_total', label: 'Total Lines', emoji: '📏' },
-        { key: 'design_variants', label: 'Design Variants', emoji: '👕' }
+        { key: 'planned_production', label: 'Planned Production', emoji: '🎯' }
       ];
       allFields.forEach(f => {
         const val = apiData_KPI[f.key as keyof ApiResponse_KPI];
         if (val !== undefined) response += `${f.emoji} ${f.label}: ${typeof val === 'number' ? val.toLocaleString() : val}\n`;
       });
+      if (speakEnabled) speakText(response.replace(/\*\*/g, ''), language);
       return response;
     }
 
     // ===== LINE QUERY =====
     if (parsed.isLineQuery || q.includes('best line') || q.includes('top line') || q.includes('worst line')) {
-      if (!lineEfficiencyData || lineEfficiencyData.length === 0) return '❌ No line data available.';
+      if (!lineEfficiencyData || lineEfficiencyData.length === 0) return t('noData');
       
       const sorted = [...lineEfficiencyData].sort((a, b) => b.efficiency - a.efficiency);
       const isWorst = q.includes('worst') || q.includes('low');
       const bestOrWorst = isWorst ? sorted[sorted.length - 1] : sorted[0];
       
-      if (!bestOrWorst) return '❌ No line found.';
+      if (!bestOrWorst) return t('noData');
       
-      // Store context for follow-up
       setLastContext({
         type: 'line',
         data: bestOrWorst,
@@ -453,40 +595,19 @@ const ChatBotAI: React.FC<{ isOpen: boolean; onClose: () => void }> = ({ isOpen,
         workers: getWorkersForLine(bestOrWorst.line_code)
       });
 
-      let response = `🏢 **${isWorst ? 'Worst' : 'Best'} Line: ${bestOrWorst.line_code}**\n\n`;
-      response += `📊 Efficiency: ${bestOrWorst.efficiency}%\n`;
-      response += `📈 Actual: ${bestOrWorst.actual?.toLocaleString() || 0}\n`;
-      response += `🎯 Target: ${bestOrWorst.target?.toLocaleString() || 0}\n`;
+      const lineLabel = isWorst ? t('worstLine', { line: bestOrWorst.line_code }) : t('line', { line: bestOrWorst.line_code });
+      let response = lineLabel + '\n\n';
+      response += t('efficiency', { eff: bestOrWorst.efficiency }) + '\n';
+      response += t('actual', { actual: bestOrWorst.actual?.toLocaleString() || 0 }) + '\n';
+      response += t('target', { target: bestOrWorst.target?.toLocaleString() || 0 }) + '\n';
       
       const workers = getWorkersForLine(bestOrWorst.line_code);
       if (workers.length > 0) {
-        response += `\n👥 Workers on this line: **${workers.length}**\n`;
-        response += `💡 **Tip:** Ask "line ${bestOrWorst.line_code} workers" to see all workers`;
+        response += `\n${t('workersOnLine', { count: workers.length })}\n`;
+        response += `💡 ${t('tipWorkers', { code: bestOrWorst.line_code })}`;
       }
       
-      // If graph requested
-      if (parsed.isGraph && parsed.chartType) {
-        const chartData = lineEfficiencyData.map((l: any) => ({
-          name: l.line_code || 'Unknown',
-          value: l.efficiency || 0
-        }));
-        setGraphData(chartData);
-        setGraphType(parsed.chartType);
-        setGraphTitle(`Line Efficiency - ${parsed.chartType.toUpperCase()} Chart`);
-        setShowGraph(true);
-        return {
-          id: generateUniqueId(),
-          text: `📊 **Line Efficiency - ${parsed.chartType.toUpperCase()} Chart**\n\nShowing efficiency by line. Best line: ${bestOrWorst.line_code}`,
-          sender: 'bot',
-          timestamp: new Date(),
-          type: 'analysis',
-          chartData: chartData,
-          showChart: true,
-          chartType: parsed.chartType,
-          chartTitle: graphTitle
-        } as Message;
-      }
-      
+      if (speakEnabled) speakText(response.replace(/\*\*/g, ''), language);
       return response;
     }
 
@@ -511,7 +632,12 @@ const ChatBotAI: React.FC<{ isOpen: boolean; onClose: () => void }> = ({ isOpen,
         if (w.DepartmentName) response += `   📋 ${w.DepartmentName}\n`;
         response += '\n';
       });
-      response += `💡 **Tip:** Ask "worker info ${workers[0]?.WorkerCode}" for details or "show graph" to visualize`;
+      response += `💡 ${t('tipGraph')}`;
+      
+      if (speakEnabled) {
+        const names = workers.map((w: any) => w.WorkerDescription).join(', ');
+        speakText(`Workers on line ${lineCode}: ${names}`, language);
+      }
       return response;
     }
 
@@ -521,28 +647,28 @@ const ChatBotAI: React.FC<{ isOpen: boolean; onClose: () => void }> = ({ isOpen,
       const details = workerDetailsMap.get(code);
       if (!details) return `❌ Worker ${code} not found.`;
       
-      // Get production data
       let production = 0;
       if (topWorkers) {
         const found = topWorkers.find((w: any) => w.WorkerCode === code);
         if (found) production = found.production_qty;
       }
       
-      let response = `👤 **Worker Details: ${details.WorkerDescription || code}**\n\n`;
+      let response = t('workerInfo', { name: details.WorkerDescription || code }) + '\n\n';
       response += `🆔 Worker Code: ${code}\n`;
       response += `🏢 Company: ${details.CompanyId || 'N/A'}\n`;
       response += `🏬 Branch: ${details.BrId || 'N/A'}\n`;
       response += `📋 Department: ${details.DepartmentName || 'N/A'}\n`;
-      if (production > 0) response += `📊 Production: ${production.toLocaleString()} Qty\n`;
-      response += `\n💡 **Tip:** Ask "top 5 workers" to see rankings`;
+      if (production > 0) response += t('production', { qty: production.toLocaleString() }) + '\n';
+      response += `\n💡 ${t('tipGraph')}`;
+      
+      if (speakEnabled) speakText(response.replace(/\*\*/g, ''), language);
       return response;
     }
 
     // ===== COMPARISON =====
     if (parsed.isComparison) {
-      // Company comparison
       if (q.includes('company') || q.includes('companies')) {
-        if (!apiData_Filter || apiData_Filter.length === 0) return '❌ No data for comparison.';
+        if (!apiData_Filter || apiData_Filter.length === 0) return t('noData');
         
         const companies = new Map();
         apiData_Filter.forEach((item: any) => {
@@ -560,22 +686,22 @@ const ChatBotAI: React.FC<{ isOpen: boolean; onClose: () => void }> = ({ isOpen,
           value: c.production || c.count
         }));
         
-        // Store context
         setLastContext({
           type: 'comparison',
           data: chartData,
           chartType: parsed.chartType || 'bar'
         });
         
-        // If graph requested with specific chart type
         if (parsed.isGraph && parsed.chartType) {
           setGraphData(chartData);
           setGraphType(parsed.chartType);
-          setGraphTitle(`Company Comparison - ${parsed.chartType.toUpperCase()} Chart`);
+          setGraphTitle(`${t('comparison')} - ${parsed.chartType.toUpperCase()} Chart`);
           setShowGraph(true);
+          const msg = `📊 **${t('comparison')}**\n\nShowing production by company.`;
+          if (speakEnabled) speakText(msg, language);
           return {
             id: generateUniqueId(),
-            text: `📊 **Company Comparison - ${parsed.chartType.toUpperCase()} Chart**\n\nShowing production by company.`,
+            text: msg,
             sender: 'bot',
             timestamp: new Date(),
             type: 'analysis',
@@ -586,20 +712,20 @@ const ChatBotAI: React.FC<{ isOpen: boolean; onClose: () => void }> = ({ isOpen,
           } as Message;
         }
         
-        // Text response
-        let response = '🏢 **Company Comparison:**\n\n';
+        let response = t('comparison') + '\n\n';
         const sorted = Array.from(companies.values()).sort((a: any, b: any) => b.production - a.production);
         sorted.forEach((c: any, i: number) => {
           const medal = i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : `${i+1}.`;
           response += `${medal} ${c.name}: ${c.production?.toLocaleString() || 0} units\n`;
         });
-        response += `\n💡 **Tip:** Add "pie chart" or "bar chart" for visualization!`;
+        response += `\n💡 ${t('tip')}`;
+        
+        if (speakEnabled) speakText(response.replace(/\*\*/g, ''), language);
         return response;
       }
       
-      // Department comparison
       if (q.includes('department') || q.includes('dept')) {
-        if (!departmentData || departmentData.length === 0) return '❌ No department data.';
+        if (!departmentData || departmentData.length === 0) return t('noData');
         
         const chartData = departmentData.map((d: any) => ({
           name: d.department_name || 'Unknown',
@@ -609,11 +735,13 @@ const ChatBotAI: React.FC<{ isOpen: boolean; onClose: () => void }> = ({ isOpen,
         if (parsed.isGraph && parsed.chartType) {
           setGraphData(chartData);
           setGraphType(parsed.chartType);
-          setGraphTitle(`Department Comparison - ${parsed.chartType.toUpperCase()} Chart`);
+          setGraphTitle(`${t('deptComparison')} - ${parsed.chartType.toUpperCase()} Chart`);
           setShowGraph(true);
+          const msg = `📊 **${t('deptComparison')}**\n\nShowing production by department.`;
+          if (speakEnabled) speakText(msg, language);
           return {
             id: generateUniqueId(),
-            text: `📊 **Department Comparison - ${parsed.chartType.toUpperCase()} Chart**\n\nShowing production by department.`,
+            text: msg,
             sender: 'bot',
             timestamp: new Date(),
             type: 'analysis',
@@ -624,23 +752,24 @@ const ChatBotAI: React.FC<{ isOpen: boolean; onClose: () => void }> = ({ isOpen,
           } as Message;
         }
         
-        let response = '🏢 **Department Comparison:**\n\n';
+        let response = t('deptComparison') + '\n\n';
         const sorted = [...departmentData].sort((a, b) => b.total_production - a.total_production);
         sorted.forEach((d: any, i: number) => {
           const medal = i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : `${i+1}.`;
           response += `${medal} ${d.department_name}: ${d.total_production?.toLocaleString() || 0} units\n`;
         });
-        response += `\n💡 **Tip:** Add "pie chart" or "bar chart" for visualization!`;
+        response += `\n💡 ${t('tip')}`;
+        
+        if (speakEnabled) speakText(response.replace(/\*\*/g, ''), language);
         return response;
       }
     }
 
-    // ===== WORKERS (with exact count) =====
+    // ===== WORKERS =====
     if (parsed.dataSource === 'workers' || parsed.type === 'worker' || q.includes('worker') || q.includes('employee')) {
       const data = parsed.type === 'low' ? lowWorkers : topWorkers;
-      if (!data || data.length === 0) return `❌ No ${parsed.type || 'worker'} data available.`;
+      if (!data || data.length === 0) return t('noData');
       
-      // Use exact count from query
       const count = parsed.exactCount ? Math.min(parsed.count, data.length) : Math.min(parsed.count || 5, data.length);
       const workers = data.slice(0, count);
       
@@ -651,7 +780,6 @@ const ChatBotAI: React.FC<{ isOpen: boolean; onClose: () => void }> = ({ isOpen,
         workers: workers
       });
 
-      // If graph requested with specific chart type
       if (parsed.isGraph && parsed.chartType) {
         const chartData = workers.map((w: WorkerPerformance) => ({
           name: workerDetailsMap.get(w.WorkerCode?.toString().trim())?.WorkerDescription || w.WorkerCode,
@@ -660,11 +788,14 @@ const ChatBotAI: React.FC<{ isOpen: boolean; onClose: () => void }> = ({ isOpen,
         }));
         setGraphData(chartData);
         setGraphType(parsed.chartType);
-        setGraphTitle(`${parsed.type === 'top' ? '🏆 TOP' : '📉 LOW'} ${count} Workers - ${parsed.chartType.toUpperCase()} Chart`);
+        const title = parsed.type === 'top' ? t('workers', { count }) : t('lowWorkers', { count });
+        setGraphTitle(`${title} - ${parsed.chartType.toUpperCase()} Chart`);
         setShowGraph(true);
+        const msg = `📊 **${title} - ${parsed.chartType.toUpperCase()} Chart**\n\nExactly ${count} ${parsed.type} performers show kar raha hoon.`;
+        if (speakEnabled) speakText(msg, language);
         return {
           id: generateUniqueId(),
-          text: `📊 **${parsed.type === 'top' ? '🏆 TOP' : '📉 LOW'} ${count} Workers - ${parsed.chartType.toUpperCase()} Chart**\n\nShowing exactly ${count} ${parsed.type} performers.`,
+          text: msg,
           sender: 'bot',
           timestamp: new Date(),
           type: 'analysis',
@@ -675,7 +806,6 @@ const ChatBotAI: React.FC<{ isOpen: boolean; onClose: () => void }> = ({ isOpen,
         } as Message;
       }
 
-      // Text response with exact count
       let response = `${parsed.type === 'top' ? '🏆 TOP' : '📉 LOW'} ${count} Workers (Exact):\n\n`;
       workers.forEach((w: WorkerPerformance, i: number) => {
         const details = workerDetailsMap.get(w.WorkerCode?.toString().trim());
@@ -684,13 +814,18 @@ const ChatBotAI: React.FC<{ isOpen: boolean; onClose: () => void }> = ({ isOpen,
         if (details?.CompanyId && details.CompanyId !== 'N/A') response += `   🏢 ${details.CompanyId} - ${details.BrId}\n`;
         response += '\n';
       });
-      response += `💡 **Tip:** Add "bar chart", "pie chart", or "line chart" for exact graph!`;
+      response += `💡 ${t('tip')}`;
+      
+      if (speakEnabled) {
+        const names = workers.map((w: WorkerPerformance) => workerDetailsMap.get(w.WorkerCode?.toString().trim())?.WorkerDescription || w.WorkerCode).join(', ');
+        speakText(`${parsed.type === 'top' ? 'Top' : 'Low'} ${count} workers: ${names}`, language);
+      }
       return response;
     }
 
     // ===== DEPARTMENT GRAPH =====
     if ((q.includes('department') || q.includes('dept')) && parsed.isGraph) {
-      if (!departmentData || departmentData.length === 0) return '❌ No department data available.';
+      if (!departmentData || departmentData.length === 0) return t('noData');
       const chartData = departmentData.map((d: any) => ({
         name: d.department_name || 'Unknown',
         value: d.total_production || 0
@@ -699,9 +834,11 @@ const ChatBotAI: React.FC<{ isOpen: boolean; onClose: () => void }> = ({ isOpen,
       setGraphType(parsed.chartType || 'bar');
       setGraphTitle(`Department Wise Production - ${(parsed.chartType || 'bar').toUpperCase()} Chart`);
       setShowGraph(true);
+      const msg = `📊 **Department Wise Production - ${(parsed.chartType || 'bar').toUpperCase()} Chart**\n\nShowing production by department.`;
+      if (speakEnabled) speakText(msg, language);
       return {
         id: generateUniqueId(),
-        text: `📊 **Department Wise Production - ${(parsed.chartType || 'bar').toUpperCase()} Chart**\n\nShowing production by department.`,
+        text: msg,
         sender: 'bot',
         timestamp: new Date(),
         type: 'analysis',
@@ -714,7 +851,7 @@ const ChatBotAI: React.FC<{ isOpen: boolean; onClose: () => void }> = ({ isOpen,
 
     // ===== LINE EFFICIENCY GRAPH =====
     if ((q.includes('line') || q.includes('efficiency')) && parsed.isGraph) {
-      if (!lineEfficiencyData || lineEfficiencyData.length === 0) return '❌ No line efficiency data available.';
+      if (!lineEfficiencyData || lineEfficiencyData.length === 0) return t('noData');
       const chartData = lineEfficiencyData.map((l: any) => ({
         name: l.line_code || 'Unknown',
         value: l.efficiency || 0,
@@ -725,9 +862,11 @@ const ChatBotAI: React.FC<{ isOpen: boolean; onClose: () => void }> = ({ isOpen,
       setGraphType(parsed.chartType || 'bar');
       setGraphTitle(`Line Efficiency - ${(parsed.chartType || 'bar').toUpperCase()} Chart`);
       setShowGraph(true);
+      const msg = `📊 **Line Efficiency - ${(parsed.chartType || 'bar').toUpperCase()} Chart**\n\nShowing efficiency by line.`;
+      if (speakEnabled) speakText(msg, language);
       return {
         id: generateUniqueId(),
-        text: `📊 **Line Efficiency - ${(parsed.chartType || 'bar').toUpperCase()} Chart**\n\nShowing efficiency by line.`,
+        text: msg,
         sender: 'bot',
         timestamp: new Date(),
         type: 'analysis',
@@ -740,8 +879,8 @@ const ChatBotAI: React.FC<{ isOpen: boolean; onClose: () => void }> = ({ isOpen,
 
     // ===== DASHBOARD =====
     if (q.includes('dashboard') || q.includes('kpi') || q.includes('overview') || q.includes('summary')) {
-      if (!apiData_KPI) return '❌ Dashboard data not available.';
-      let response = '📊 **Dashboard KPIs:**\n\n';
+      if (!apiData_KPI) return t('noData');
+      let response = t('dashboard') + '\n\n';
       const fields = [
         { key: 'total_output_units', label: 'Total Output', emoji: '🏭' },
         { key: 'productivity_rate', label: 'Productivity Rate', emoji: '⚡' },
@@ -755,55 +894,62 @@ const ChatBotAI: React.FC<{ isOpen: boolean; onClose: () => void }> = ({ isOpen,
         const val = apiData_KPI[f.key as keyof ApiResponse_KPI];
         if (val !== undefined) response += `${f.emoji} ${f.label}: ${typeof val === 'number' ? val.toLocaleString() : val}\n`;
       });
+      if (speakEnabled) speakText(response.replace(/\*\*/g, ''), language);
       return response;
     }
 
     // ===== TABLE DATA =====
     if (q.includes('table') || q.includes('list') || q.includes('records') || q.includes('data') || q.includes('show me')) {
-      if (!apiData_Filter || apiData_Filter.length === 0) return '❌ No table data available.';
+      if (!apiData_Filter || apiData_Filter.length === 0) return t('noData');
       const count = parsed.exactCount ? Math.min(parsed.count, apiData_Filter.length) : Math.min(5, apiData_Filter.length);
-      let response = `📋 **Showing ${count} Records:**\n\n`;
+      let response = t('records', { count }) + '\n\n';
       apiData_Filter.slice(0, count).forEach((record: any, i: number) => {
         response += `**${i+1}.** 📅 ${record.ScanningDate || 'N/A'} | 👕 ${record.StyleNo || 'N/A'} | 👤 ${record.WorkerDescription || record.WorkerCode || 'N/A'} | 📊 ${record.ScannedQty || 0}\n`;
       });
-      response += `\n📊 Total Records: ${apiData_Filter.length.toLocaleString()}`;
+      response += `\n${t('totalRecords', { count: apiData_Filter.length.toLocaleString() })}`;
+      if (speakEnabled) speakText(response.replace(/\*\*/g, ''), language);
       return response;
     }
 
     // ===== ANALYTICS =====
     if (q.includes('analyze') || q.includes('analysis') || parsed.type === 'department' || parsed.type === 'quality' || parsed.type === 'trend' || parsed.type === 'recommendation' || parsed.type === 'target') {
-      if (!apiData_Filter || apiData_Filter.length === 0) return '❌ No data for analytics.';
+      if (!apiData_Filter || apiData_Filter.length === 0) return t('noData');
       
       if (q.includes('department') || q.includes('dept')) {
         const result = formatDepartmentAnalysis(apiData_Filter, apiData_KPI || {});
+        if (speakEnabled) speakText(result.text.replace(/\*\*/g, ''), language);
         return result;
       }
       if (q.includes('bottleneck') || q.includes('line issue')) {
         const result = formatLineBottleneckAnalysis(apiData_Filter, apiData_KPI || {});
+        if (speakEnabled) speakText(result.text.replace(/\*\*/g, ''), language);
         return result;
       }
       if (q.includes('quality') || q.includes('waste')) {
         const result = formatQualityAnalysis(apiData_Filter, apiData_KPI || {});
+        if (speakEnabled) speakText(result.text.replace(/\*\*/g, ''), language);
         return result;
       }
       if (q.includes('trend') || q.includes('forecast')) {
         const result = formatTrendAnalysis(apiData_Filter, apiData_KPI || {});
+        if (speakEnabled) speakText(result.text.replace(/\*\*/g, ''), language);
         return result;
       }
       if (q.includes('recommendation') || q.includes('suggestion')) {
         const result = formatSmartRecommendations(apiData_Filter, apiData_KPI || {});
+        if (speakEnabled) speakText(result.text.replace(/\*\*/g, ''), language);
         return result;
       }
       if (q.includes('target') || q.includes('goal')) {
         const result = formatTargetAnalysis(apiData_Filter, apiData_KPI || {});
+        if (speakEnabled) speakText(result.text.replace(/\*\*/g, ''), language);
         return result;
       }
       return '💡 **Analytics Options:**\n• "analyze departments"\n• "line bottlenecks"\n• "quality analysis"\n• "smart recommendations"\n• "target achievement"';
     }
 
-    // ===== FOLLOW-UP: SHOW GRAPH FOR LAST CONTEXT =====
+    // ===== FOLLOW-UP: SHOW GRAPH =====
     if (parsed.isGraph && lastContext) {
-      // If user says "graph" after some query, use last context data
       let dataToShow = lastContext.data;
       let title = `Graph for ${lastContext.type}`;
       
@@ -832,9 +978,11 @@ const ChatBotAI: React.FC<{ isOpen: boolean; onClose: () => void }> = ({ isOpen,
         setGraphType(chartType);
         setGraphTitle(`${title} - ${chartType.toUpperCase()} Chart`);
         setShowGraph(true);
+        const msg = `📊 **${title} - ${chartType.toUpperCase()} Chart**\n\nShowing ${dataToShow.length} items.`;
+        if (speakEnabled) speakText(msg, language);
         return {
           id: generateUniqueId(),
-          text: `📊 **${title} - ${chartType.toUpperCase()} Chart**\n\nShowing ${dataToShow.length} items.`,
+          text: msg,
           sender: 'bot',
           timestamp: new Date(),
           type: 'analysis',
@@ -846,8 +994,10 @@ const ChatBotAI: React.FC<{ isOpen: boolean; onClose: () => void }> = ({ isOpen,
       }
     }
 
-    // ===== DEFAULT - SMART SUGGESTIONS =====
-    const suggestionOptions = [
+    // ===== DEFAULT =====
+    const msg = t('notFound');
+    if (speakEnabled) speakText(t('sorry'), language);
+    setSuggestions([
       'top 5 workers bar chart',
       'best line',
       'company comparison pie chart',
@@ -856,18 +1006,8 @@ const ChatBotAI: React.FC<{ isOpen: boolean; onClose: () => void }> = ({ isOpen,
       'smart recommendations',
       'show table',
       'close'
-    ];
-    setSuggestions(suggestionOptions);
-    
-    return `❓ **I didn't understand. Try these:**\n\n` +
-      `👥 **Workers:** "top 3 workers", "top 2 workers bar chart"\n` +
-      `🏢 **Lines:** "best line", "line L001 workers"\n` +
-      `📈 **Comparisons:** "company comparison", "company comparison pie chart"\n` +
-      `📊 **KPIs:** "total production", "all kpis"\n` +
-      `📋 **Data:** "show table", "workers list"\n` +
-      `💡 **Analytics:** "analyze departments", "quality analysis"\n` +
-      `🔊 **Voice:** Click mic or enable Auto Voice\n\n` +
-      `💬 **Or type "close" to exit chat**`;
+    ]);
+    return msg;
   };
 
   // ===== HANDLE SEND MESSAGE =====
@@ -875,14 +1015,37 @@ const ChatBotAI: React.FC<{ isOpen: boolean; onClose: () => void }> = ({ isOpen,
     const question = voiceText || inputText;
     if (!question.trim()) return;
 
+    // Check for stop speech
+    const q = question.toLowerCase();
+    if (q.includes('ok enough') || q.includes('enough') || q.includes('bas karo') || q.includes('bas') || q.includes('stop') || q.includes('ruk jao')) {
+      stopSpeaking();
+      const stopMsg = t('stopMsg');
+      setMessages(prev => [...prev, {
+        id: generateUniqueId(),
+        text: question,
+        sender: 'user',
+        timestamp: new Date()
+      }]);
+      setMessages(prev => [...prev, {
+        id: generateUniqueId(),
+        text: stopMsg,
+        sender: 'bot',
+        timestamp: new Date(),
+        type: 'success'
+      }]);
+      setInputText('');
+      return;
+    }
+
     // Check for close
-    if (question.toLowerCase().includes('close') || question.toLowerCase() === 'close') {
+    if (q.includes('close') || q === 'close') {
       setMessages(prev => [...prev, {
         id: generateUniqueId(),
         text: '👋 **Goodbye!** Closing chat...',
         sender: 'user',
         timestamp: new Date()
       }]);
+      if (speakEnabled) speakText(t('goodbye'), language);
       setTimeout(() => onClose(), 500);
       setInputText('');
       return;
@@ -903,7 +1066,7 @@ const ChatBotAI: React.FC<{ isOpen: boolean; onClose: () => void }> = ({ isOpen,
     if (!apiData_Filter && !apiData_KPI && !topWorkers) {
       setMessages(prev => [...prev, {
         id: generateUniqueId(),
-        text: '⚠️ Data is loading. Please wait...',
+        text: t('loading'),
         sender: 'bot',
         timestamp: new Date(),
         type: 'warning'
@@ -924,7 +1087,6 @@ const ChatBotAI: React.FC<{ isOpen: boolean; onClose: () => void }> = ({ isOpen,
         type: result.includes('❌') ? 'error' : result.includes('⚠️') ? 'warning' : 'success'
       }]);
       
-      // Update suggestions
       const suggestionOptions = [
         'top 5 workers bar chart',
         'best line',
@@ -1001,6 +1163,9 @@ const ChatBotAI: React.FC<{ isOpen: boolean; onClose: () => void }> = ({ isOpen,
     if (autoVoiceEnabled) {
       stopAutoVoice();
       setAutoVoiceEnabled(false);
+    }
+    if (speakEnabled) {
+      stopSpeaking();
     }
     if (inputRef.current) {
       setSavedCursorPosition(inputRef.current.selectionStart || 0);
@@ -1080,9 +1245,9 @@ const ChatBotAI: React.FC<{ isOpen: boolean; onClose: () => void }> = ({ isOpen,
           <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-cyan-500/20 rounded-full blur-3xl animate-pulse delay-700"></div>
         </div>
 
-        {/* Header with Auto Voice Toggle */}
+        {/* Header with Toggles */}
         <div className={`relative bg-gradient-to-r ${getGradientColors()} backdrop-blur-md border-b border-white/20 px-4 sm:px-6 py-2 sm:py-3 flex-shrink-0`}>
-          <div className="flex items-center justify-between">
+          <div className="flex items-center justify-between flex-wrap gap-1">
             <div className="flex items-center gap-2 sm:gap-3">
               <div className="relative">
                 <div className="w-7 h-7 sm:w-9 sm:h-9 bg-white/20 rounded-xl sm:rounded-2xl flex items-center justify-center backdrop-blur-sm border border-white/30">
@@ -1097,11 +1262,66 @@ const ChatBotAI: React.FC<{ isOpen: boolean; onClose: () => void }> = ({ isOpen,
                 </h2>
                 <p className="text-white/70 text-[8px] sm:text-[10px] flex items-center gap-1">
                   <PsychologyIcon className="text-[8px] sm:text-xs" />
-                  Smart Chatbot - All in One
+                  {language === 'en' ? 'Smart Chatbot' : 'Smart Chatbot'}
                 </p>
               </div>
             </div>
-            <div className="flex items-center gap-1 sm:gap-2">
+            
+            <div className="flex items-center gap-1 sm:gap-2 flex-wrap">
+              {/* Language Toggle */}
+              <FormControlLabel
+                control={
+                  <Switch
+                    checked={language === 'ur'}
+                    onChange={(e) => setLanguage(e.target.checked ? 'ur' : 'en')}
+                    size="small"
+                    sx={{
+                      '& .MuiSwitch-switchBase.Mui-checked': {
+                        color: '#8b5cf6',
+                      },
+                      '& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track': {
+                        backgroundColor: '#8b5cf6',
+                      },
+                    }}
+                  />
+                }
+                label={
+                  <span className="text-white/80 text-[8px] sm:text-[10px] flex items-center gap-0.5">
+                    <TranslateIcon className="text-[10px] sm:text-sm" />
+                    {language === 'en' ? 'EN' : 'UR'}
+                  </span>
+                }
+              />
+
+              {/* Speak Toggle */}
+              <FormControlLabel
+                control={
+                  <Switch
+                    checked={speakEnabled}
+                    onChange={(e) => {
+                      setSpeakEnabled(e.target.checked);
+                      if (!e.target.checked) stopSpeaking();
+                    }}
+                    size="small"
+                    sx={{
+                      '& .MuiSwitch-switchBase.Mui-checked': {
+                        color: '#10b981',
+                      },
+                      '& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track': {
+                        backgroundColor: '#10b981',
+                      },
+                    }}
+                  />
+                }
+                label={
+                  <span className="text-white/80 text-[8px] sm:text-[10px] flex items-center gap-0.5">
+                    <VolumeUpIcon className="text-[10px] sm:text-sm" />
+                    {isSpeaking ? '🔊' : ''}
+                  </span>
+                }
+              />
+
+              {/* Auto Voice Toggle */}
               <FormControlLabel
                 control={
                   <Switch
@@ -1125,6 +1345,7 @@ const ChatBotAI: React.FC<{ isOpen: boolean; onClose: () => void }> = ({ isOpen,
                   </span>
                 }
               />
+
               <button onClick={handleClose} className="w-6 h-6 sm:w-7 sm:h-7 bg-white/10 hover:bg-white/20 rounded-full flex items-center justify-center transition-all hover:rotate-90">
                 <CloseIcon className="text-white text-[10px] sm:text-sm" />
               </button>
@@ -1132,7 +1353,7 @@ const ChatBotAI: React.FC<{ isOpen: boolean; onClose: () => void }> = ({ isOpen,
           </div>
         </div>
 
-        {/* Suggestions Bar - Only in chat, no top/bottom buttons */}
+        {/* Suggestions Bar */}
         <div className="relative bg-white/5 backdrop-blur-sm border-b border-white/10 p-1.5 sm:p-2 flex-shrink-0">
           <div className="flex flex-wrap gap-1 justify-center">
             {suggestions.slice(0, 6).map((suggestion, idx) => (
@@ -1258,7 +1479,7 @@ const ChatBotAI: React.FC<{ isOpen: boolean; onClose: () => void }> = ({ isOpen,
                 }}
                 onFocus={() => setShouldAutoScroll(false)}
                 onKeyPress={(e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSendMessage(); } }}
-                placeholder={isVoiceListening || autoVoiceEnabled ? '🎤 Listening...' : 'Ask me anything...'}
+                placeholder={isVoiceListening || autoVoiceEnabled ? '🎤 Listening...' : (language === 'ur' ? 'Kuch poochhein...' : 'Ask me anything...')}
                 className={`w-full bg-white/10 backdrop-blur-sm border border-white/20 rounded-xl sm:rounded-2xl pl-2.5 sm:pl-4 pr-6 sm:pr-10 py-1.5 sm:py-2 text-white text-[10px] sm:text-xs placeholder-white/50 focus:outline-none focus:ring-2 ${getInputFocusRing()} focus:border-transparent transition-all`}
                 disabled={isVoiceListening}
               />
@@ -1271,7 +1492,7 @@ const ChatBotAI: React.FC<{ isOpen: boolean; onClose: () => void }> = ({ isOpen,
                 setTimeout(() => handleSendMessage(text), 300);
               }}
               disabled={isTyping || autoVoiceEnabled}
-              language="en-US"
+              language={language === 'ur' ? 'ur-PK' : 'en-US'}
             />
 
             <button
