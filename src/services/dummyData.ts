@@ -147,7 +147,7 @@ export const generateDummyLines = () => {
   }));
 };
 
-// Generate comprehensive filter data (all operations with workers)
+// Generate comprehensive filter data - 50 records only (fast & efficient)
 export const generateDummyFilterData = () => {
   const filterData: any[] = [];
   const workers = generateDummyWorkers();
@@ -156,7 +156,8 @@ export const generateDummyFilterData = () => {
   const lines = generateDummyLines();
   const styles = generateDummyStyles();
 
-  for (let i = 0; i < 500; i++) {
+  // Only 50 records for better performance
+  for (let i = 0; i < 50; i++) {
     const workerIdx = i % workers.length;
     const operationIdx = i % operations.length;
     const companyIdx = i % companies.length;
@@ -167,7 +168,7 @@ export const generateDummyFilterData = () => {
 
     filterData.push({
       ScanningDate: new Date(2026, Math.floor(Math.random() * 2), Math.floor(Math.random() * 28) + 1)
-        .toISOString(),
+        .toISOString().split('T')[0],
       StyleNo: styles[styleIdx].StyleNo,
       BuyMonth: `FG${String(i % 12 + 1).padStart(2, "0")}2026`,
       OrId: `WO-PAK-${String(i + 1).padStart(5, "0")}`,
@@ -193,7 +194,7 @@ export const generateDummyFilterData = () => {
   return filterData;
 };
 
-// Generate top performers
+// Generate top performers - 10 workers only
 export const generateDummyTopWorkers = () => {
   const workers = generateDummyWorkers();
   return workers.slice(0, 10).map((worker, i) => ({
@@ -202,7 +203,7 @@ export const generateDummyTopWorkers = () => {
   }));
 };
 
-// Generate low performers
+// Generate low performers - 10 workers only
 export const generateDummyLowWorkers = () => {
   const workers = generateDummyWorkers();
   return workers.slice(10, 20).map((worker, i) => ({
@@ -211,7 +212,7 @@ export const generateDummyLowWorkers = () => {
   }));
 };
 
-// Generate daily trend data
+// Generate daily trend data - 29 days
 export const generateDummyDailyTrend = () => {
   return Array.from({ length: 29 }, (_, i) => {
     const actual = Math.floor(Math.random() * 5000) + 3000;
@@ -226,7 +227,7 @@ export const generateDummyDailyTrend = () => {
   });
 };
 
-// Generate department-wise data
+// Generate department-wise data - all departments
 export const generateDummyDepartmentWise = () => {
   return PAKISTAN_DEPARTMENTS.map((dept) => ({
     department_name: dept,
@@ -234,7 +235,7 @@ export const generateDummyDepartmentWise = () => {
   }));
 };
 
-// Generate line efficiency data
+// Generate line efficiency data - 12 lines
 export const generateDummyLineEfficiency = () => {
   const companies = PAKISTAN_COMPANIES;
   const result: any[] = [];
@@ -290,7 +291,7 @@ export const generateDummyLineOperationEfficiency = () => {
   return result;
 };
 
-// Generate top line operations
+// Generate top line operations - 10 records
 export const generateDummyTopLineOperations = () => {
   const lines = generateDummyLines();
   const operations = generateDummyOperations();
@@ -311,7 +312,7 @@ export const generateDummyTopLineOperations = () => {
   return result.sort((a, b) => b.production_qty - a.production_qty).slice(0, 10);
 };
 
-// Generate low line operations
+// Generate low line operations - 10 records
 export const generateDummyLowLineOperations = () => {
   const lines = generateDummyLines();
   const operations = generateDummyOperations();

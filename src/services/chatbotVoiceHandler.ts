@@ -1,7 +1,4 @@
-// ChatBot Voice Handler
-// Uses Web Speech API (100% Free, No Cost)
-// Works on Desktop & Mobile
-// ......................chatbotVoiceHandler.ts file .............................
+// chatbotVoiceHandler.ts - Complete Updated File with Fixed Speech
 export interface VoiceState {
   isListening: boolean;
   transcript: string;
@@ -11,7 +8,7 @@ export interface VoiceState {
 }
 
 export interface VoiceConfig {
-  language: string; // 'en-US', 'ur-PK', etc.
+  language: string;
   continuous: boolean;
   interimResults: boolean;
   maxAlternatives: number;
@@ -23,9 +20,11 @@ export interface AutoVoiceMode {
   recognition: any;
 }
 
+let isSpeechSynthesisSupported = false;
+let speechRestartTimeout: ReturnType<typeof setTimeout> | null = null;
+
 // ===== VOICE RECOGNITION SETUP =====
 export const initVoiceRecognition = () => {
-  // Check browser support
   const SpeechRecognition = window.SpeechRecognition || (window as any).webkitSpeechRecognition;
 
   if (!SpeechRecognition) {
@@ -50,19 +49,19 @@ export const startVoiceListening = (
 ) => {
   if (!recognition) return;
 
-  // Reset transcript
   let finalTranscript = '';
 
-  // Setup speech recognition
   recognition.continuous = config.continuous;
   recognition.interimResults = config.interimResults;
   recognition.maxAlternatives = config.maxAlternatives;
   recognition.language = config.language;
 
-  // Start listening
-  recognition.start();
+  try {
+    recognition.start();
+  } catch (e) {
+    console.log('Recognition start error:', e);
+  }
 
-  // On result
   recognition.onresult = (event: any) => {
     let interimTranscript = '';
     let confidence = 0;
@@ -92,7 +91,6 @@ export const startVoiceListening = (
     }
   };
 
-  // On error
   recognition.onerror = (event: any) => {
     let errorMessage = '';
 
@@ -112,6 +110,9 @@ export const startVoiceListening = (
       case 'service-not-available':
         errorMessage = '⚠️ Speech service unavailable.';
         break;
+      case 'not-allowed':
+        errorMessage = '🚫 Microphone access denied. Please allow microphone access.';
+        break;
       default:
         errorMessage = `Error: ${event.error}`;
     }
@@ -125,7 +126,6 @@ export const startVoiceListening = (
     });
   };
 
-  // On end
   recognition.onend = () => {
     onResult({
       isListening: false,
@@ -139,61 +139,140 @@ export const startVoiceListening = (
 // ===== STOP LISTENING =====
 export const stopVoiceListening = (recognition: any) => {
   if (recognition) {
-    recognition.stop();
+    try {
+      recognition.stop();
+    } catch (e) {
+      console.log('Stop error:', e);
+    }
   }
 };
 
 // ===== ABORT LISTENING =====
 export const abortVoiceListening = (recognition: any) => {
   if (recognition) {
-    recognition.abort();
+    try {
+      recognition.abort();
+    } catch (e) {
+      console.log('Abort error:', e);
+    }
   }
 };
 
-// ===== TEXT TO SPEECH (Optional: Read response aloud) =====
+// ===== TEXT TO SPEECH - FIXED =====
+let currentUtterance: SpeechSynthesisUtterance | null = null;
+let isSpeaking = false;
+let speechQueue: string[] = [];
+let isSpeechPaused = false;
+
 export const speakText = (text: string, language: string = 'en-US') => {
   if (!window.speechSynthesis) {
     console.log('Speech synthesis not supported');
     return;
   }
 
-  // Stop any ongoing speech
-  window.speechSynthesis.cancel();
+  // Clean text
+  const cleanText = text
+    .replace(/\*\*/g, '')
+    .replace(/[📊📋👥🏢💡🔊💬📈📉📏👤🏆⭐⚠️✅❌🔴🟡🟢💡🔧🎯🏭🏬🎯📝👥⚡🔍🎯📋📊🏆📈📉📏]/g, '')
+    .trim();
 
-  const utterance = new SpeechSynthesisUtterance(text);
-  utterance.lang = language;
-  utterance.rate = 1;
-  utterance.pitch = 1;
-  utterance.volume = 1;
+  if (!cleanText) return;
 
-  window.speechSynthesis.speak(utterance);
+  // Add to queue
+  speechQueue.push(cleanText);
+  processSpeechQueue(language);
 };
 
-// ===== STOP SPEECH =====
+const processSpeechQueue = (language: string = 'en-US') => {
+  if (isSpeaking || speechQueue.length === 0 || isSpeechPaused) return;
+
+  isSpeaking = true;
+  const text = speechQueue.shift()!;
+
+  try {
+    // Cancel any ongoing speech
+    window.speechSynthesis.cancel();
+
+    const utterance = new SpeechSynthesisUtterance(text);
+    utterance.lang = language;
+    utterance.rate = 0.9;
+    utterance.pitch = 1;
+    utterance.volume = 1;
+
+    utterance.onstart = () => {
+      isSpeaking = true;
+    };
+
+    utterance.onend = () => {
+      isSpeaking = false;
+      // Process next in queue
+      setTimeout(() => {
+        processSpeechQueue(language);
+      }, 100);
+    };
+
+    utterance.onerror = (event) => {
+      console.log('Speech error:', event);
+      isSpeaking = false;
+      // Try next in queue after error
+      setTimeout(() => {
+        processSpeechQueue(language);
+      }, 200);
+    };
+
+    currentUtterance = utterance;
+    window.speechSynthesis.speak(utterance);
+  } catch (error) {
+    console.error('Speech error:', error);
+    isSpeaking = false;
+    // Try next in queue
+    setTimeout(() => {
+      processSpeechQueue(language);
+    }, 200);
+  }
+};
+
+// ===== STOP SPEECH - FIXED =====
 export const stopSpeech = () => {
   if (window.speechSynthesis) {
-    window.speechSynthesis.cancel();
+    try {
+      window.speechSynthesis.cancel();
+      isSpeaking = false;
+      speechQueue = [];
+      currentUtterance = null;
+      isSpeechPaused = false;
+    } catch (error) {
+      console.error('Stop speech error:', error);
+    }
   }
 };
 
-// ===== FORMAT VOICE STATE FOR UI =====
-export const formatVoiceState = (state: VoiceState): string => {
-  if (state.error) {
-    return `${state.error}`;
+// ===== PAUSE SPEECH =====
+export const pauseSpeech = () => {
+  if (window.speechSynthesis) {
+    try {
+      window.speechSynthesis.pause();
+      isSpeechPaused = true;
+    } catch (error) {
+      console.error('Pause speech error:', error);
+    }
   }
-
-  if (state.isListening) {
-    return `🎤 Listening... (${state.confidence}% confident)`;
-  }
-
-  if (state.isFinal && state.transcript) {
-    return `✅ Heard: "${state.transcript}"`;
-  }
-
-  return '🎤 Click mic to speak...';
 };
 
-// ===== UTILITY: Detect browser support =====
+// ===== RESUME SPEECH =====
+export const resumeSpeech = () => {
+  if (window.speechSynthesis) {
+    try {
+      window.speechSynthesis.resume();
+      isSpeechPaused = false;
+      processSpeechQueue();
+    } catch (error) {
+      console.error('Resume speech error:', error);
+    }
+  }
+};
+
+// ===== CHECK SUPPORT =====
 export const checkVoiceSupport = (): {
   speechRecognition: boolean;
   speechSynthesis: boolean;
@@ -203,11 +282,12 @@ export const checkVoiceSupport = (): {
   const speechSynthesis = !!window.speechSynthesis;
 
   let browser = 'Unknown';
-  if (navigator.userAgent.includes('Chrome')) browser = 'Chrome';
-  else if (navigator.userAgent.includes('Firefox')) browser = 'Firefox';
-  else if (navigator.userAgent.includes('Safari')) browser = 'Safari';
-  else if (navigator.userAgent.includes('Edge')) browser = 'Edge';
-  else if (navigator.userAgent.includes('Opera')) browser = 'Opera';
+  const ua = navigator.userAgent;
+  if (ua.includes('Chrome')) browser = 'Chrome';
+  else if (ua.includes('Firefox')) browser = 'Firefox';
+  else if (ua.includes('Safari')) browser = 'Safari';
+  else if (ua.includes('Edge')) browser = 'Edge';
+  else if (ua.includes('Opera')) browser = 'Opera';
 
   return {
     speechRecognition: !!SpeechRecognition,
@@ -216,7 +296,7 @@ export const checkVoiceSupport = (): {
   };
 };
 
-// ===== AUTO VOICE MODE (No Clicking) =====
+// ===== AUTO VOICE MODE =====
 export const startAutoListening = (
   onTranscript: (text: string) => void,
   onStateChange: (state: VoiceState) => void,
@@ -250,7 +330,11 @@ export const startAutoListening = (
     (transcript) => {
       if (transcript && transcript.trim()) {
         onTranscript(transcript);
-        setTimeout(() => {
+        // Restart after processing - FIXED: proper delay
+        if (speechRestartTimeout) {
+          clearTimeout(speechRestartTimeout);
+        }
+        speechRestartTimeout = setTimeout(() => {
           restartAutoListening(recognition, config, onTranscript, onStateChange);
         }, 500);
       }
@@ -270,8 +354,14 @@ export const restartAutoListening = (
   onTranscript: (text: string) => void,
   onStateChange: (state: VoiceState) => void
 ) => {
-  if (recognition) {
-    try {
+  if (!recognition) return;
+  
+  try {
+    // Stop current listening
+    stopVoiceListening(recognition);
+    
+    // Start new listening
+    setTimeout(() => {
       startVoiceListening(
         recognition,
         config,
@@ -281,24 +371,35 @@ export const restartAutoListening = (
         (transcript) => {
           if (transcript && transcript.trim()) {
             onTranscript(transcript);
-            setTimeout(() => {
-              restartAutoListening(
-                recognition,
-                config,
-                onTranscript,
-                onStateChange
-              );
+            // Schedule restart
+            if (speechRestartTimeout) {
+              clearTimeout(speechRestartTimeout);
+            }
+            speechRestartTimeout = setTimeout(() => {
+              restartAutoListening(recognition, config, onTranscript, onStateChange);
             }, 500);
           }
         }
       );
-    } catch (e) {
-      console.log('Auto voice restart error:', e);
+    }, 300);
+  } catch (e) {
+    console.log('Auto voice restart error:', e);
+    // Retry after delay
+    if (speechRestartTimeout) {
+      clearTimeout(speechRestartTimeout);
     }
+    speechRestartTimeout = setTimeout(() => {
+      restartAutoListening(recognition, config, onTranscript, onStateChange);
+    }, 1000);
   }
 };
 
 export const stopAutoListening = (recognition: any) => {
+  if (speechRestartTimeout) {
+    clearTimeout(speechRestartTimeout);
+    speechRestartTimeout = null;
+  }
+  
   if (recognition) {
     try {
       recognition.abort();
@@ -306,6 +407,23 @@ export const stopAutoListening = (recognition: any) => {
       console.log('Error stopping auto voice:', e);
     }
   }
+};
+
+// ===== FORMAT VOICE STATE =====
+export const formatVoiceState = (state: VoiceState): string => {
+  if (state.error) {
+    return `${state.error}`;
+  }
+
+  if (state.isListening) {
+    return `🎤 Listening... (${state.confidence}% confident)`;
+  }
+
+  if (state.isFinal && state.transcript) {
+    return `✅ Heard: "${state.transcript}"`;
+  }
+
+  return '🎤 Click mic to speak...';
 };
 
 // ===== TYPE DECLARATIONS =====

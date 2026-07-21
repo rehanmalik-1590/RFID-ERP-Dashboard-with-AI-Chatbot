@@ -1,6 +1,4 @@
-// ChatBot Response Formatter
-// Formats all responses in beautiful, rich format with emojis and insights
-// ......................chatbotResponseFormatter.ts file .............................
+// chatbotResponseFormatter.ts - Complete Updated File
 import {
   analyzeDepartmentPerformance,
   detectLineBottlenecks,
@@ -10,6 +8,13 @@ import {
   analyzeQuality,
   analyzeTargetAchievement,
   generateSmartRecommendations,
+  type DepartmentAnalysis,
+  type LineBottleneck,
+  type CompanyComparison,
+  type TrendAnalysis,
+  type QualityAnalysis,
+  type TargetAnalysis,
+  type Recommendation,
 } from './chatbotAnalytics';
 import {
   getCompanyName,
@@ -25,182 +30,100 @@ export interface FormattedResponse {
   showChart?: boolean;
 }
 
-// ===== TRANSLATION HELPER (Roman Urdu) =====
-const t = (key: string, params?: any, lang: 'en' | 'ur' = 'en'): string => {
+// ===== TRANSLATION HELPER =====
+const t = (key: string, params?: any): string => {
   const translations: any = {
-    en: {
-      deptRanking: '📊 **DEPARTMENT PERFORMANCE RANKING**',
-      production: '📈 Production',
-      efficiency: '⚡ Efficiency',
-      workers: '👥 Workers',
-      quality: '📊 Quality',
-      keyInsights: '💡 **Key Insights:**',
-      topPerformer: 'is top performer with',
-      units: 'units',
-      needsSupport: 'needs support -',
-      recommendation: '🎯 **Recommendation:**',
-      crossTraining: '• Cross-training program for',
-      deptImprovement: '• Expected improvement: 8-12% efficiency boost',
-      lineEfficiency: '⚙️ **LINE EFFICIENCY ANALYSIS**',
-      criticalIssues: '🔴 **CRITICAL ISSUES:**',
-      gap: 'Gap:',
-      atRisk: '🟡 **AT RISK (Below 80%):**',
-      performingWell: '🟢 **PERFORMING WELL (100%+):**',
-      keepUp: '- Keep up!',
-      insight: '💡 **Insight:**',
-      totalLines: '• Total lines analyzed:',
-      criticalLines: '• Critical lines:',
-      atRiskLines: '• At-risk lines:',
-      healthyLines: '• Healthy lines:',
-      suggestedActions: '🔧 **Suggested Actions:**',
-      action1: '1. Immediate maintenance on critical lines',
-      action2: '2. Worker reallocation to high-efficiency lines',
-      action3: '3. Equipment inspection and upgrade planning',
-      workerOptimization: '👥 **WORKER PLACEMENT OPTIMIZATION**',
-      topPerformers: '⭐ **TOP PERFORMERS:**',
-      needsImprovement: '📉 **NEEDS IMPROVEMENT:**',
-      suggestions: '💡 **Suggestions:**',
-      qualityControl: '🔍 **QUALITY CONTROL ANALYSIS**',
-      keyMetrics: '📊 **Key Metrics:**',
-      wastePercentage: '• Waste Percentage:',
-      costImpact: '• Cost Impact: PKR',
-      qualityDeviation: '• Quality Deviation:',
-      rootCause: '🔍 **Root Cause Analysis:**',
-      primarySource: '• Primary Source:',
-      issue: '• Issue: Quality control gaps and operator errors',
-      actionPlan: '🎯 **Action Plan:**',
-      qualityChecks: '2. Implement 2-point quality checks in',
-      monthlyAudits: '3. Schedule monthly quality audits',
-      trainingProgram: '4. Provide operator training program',
-      expectedResults: '📈 **Expected Results:**',
-      reduceWaste: '• Reduce waste by 40-50%',
-      saveCost: '• Save ~PKR 5,000/day',
-      improveQuality: '• Improve quality score by 15-20%',
-      targetAnalysis: '🎯 **TARGET ACHIEVEMENT ANALYSIS**',
-      currentStatus: '📊 **Current Status:**',
-      target: '• Target:',
-      achieved: '• Achieved:',
-      achievement: '• Achievement:',
-      exceeded: '🟢 EXCEEDED',
-      onTrack: '🟡 ON TRACK',
-      gapToClose: '⚠️ **Gap to Close:**',
-      dailyTarget: '• Daily target:',
-      daysRemaining: '• Days remaining:',
-      priority: '• Priority: Increase production capacity',
-      greatNews: '✅ **Great News!** Target exceeded!',
-      bonusPotential: '• Bonus potential: Available',
-      teamMorale: '• Team morale: High',
-      raiseTarget: '• Consider raising next target',
-      trendPrediction: '📈 **TREND PREDICTION & FORECAST**',
-      predictedTrend: '🔮 **Predicted Trend:**',
-      confidenceLevel: '📊 **Confidence Level:**',
-      avgProduction: '📉 **Avg Production:**',
-      avgEfficiency: '⚡ **Avg Efficiency:**',
-      analysis: '💡 **Analysis:**',
-      upwardTrend: '✅ Production is in an upward trend',
-      maintainMomentum: '✅ Maintain current momentum',
-      stableGrowth: '⚠️ Production is stable but growth is needed',
-      implementOptimization: '⚠️ Implement optimization measures',
-      recommendations: '🎯 **Recommendations:**',
-      monitorTrends: '• Continue monitoring trends daily',
-      adjustTargets: '• Adjust production targets quarterly',
-      planCapacity: '• Plan capacity expansion if needed',
-      companyComparison: '🏭 **COMPANY PERFORMANCE COMPARISON**',
-      keyInsight: '💡 **Key Insight:**',
-      leadingWith: 'is leading with',
-      smartRecommendations: '💡 **SMART RECOMMENDATIONS**',
-      criticalActNow: '🔴 **CRITICAL (Act Now):**',
-      highPriority: '🟠 **HIGH PRIORITY:**',
-      impact: 'Impact:',
-    },
-    ur: {
-      deptRanking: '📊 **DEPARTMENT PERFORMANCE RANKING**',
-      production: '📈 Production',
-      efficiency: '⚡ Efficiency',
-      workers: '👥 Workers',
-      quality: '📊 Quality',
-      keyInsights: '💡 **Key Insights:**',
-      topPerformer: 'top performer hai',
-      units: 'units',
-      needsSupport: 'ko support chahiye -',
-      recommendation: '🎯 **Recommendation:**',
-      crossTraining: '• Cross-training program for',
-      deptImprovement: '• Expected improvement: 8-12% efficiency boost',
-      lineEfficiency: '⚙️ **LINE EFFICIENCY ANALYSIS**',
-      criticalIssues: '🔴 **CRITICAL ISSUES:**',
-      gap: 'Gap:',
-      atRisk: '🟡 **AT RISK (Below 80%):**',
-      performingWell: '🟢 **PERFORMING WELL (100%+):**',
-      keepUp: '- Keep up!',
-      insight: '💡 **Insight:**',
-      totalLines: '• Total lines analyzed:',
-      criticalLines: '• Critical lines:',
-      atRiskLines: '• At-risk lines:',
-      healthyLines: '• Healthy lines:',
-      suggestedActions: '🔧 **Suggested Actions:**',
-      action1: '1. Critical lines par immediate maintenance',
-      action2: '2. High-efficiency lines par worker reallocation',
-      action3: '3. Equipment inspection aur upgrade planning',
-      workerOptimization: '👥 **WORKER PLACEMENT OPTIMIZATION**',
-      topPerformers: '⭐ **TOP PERFORMERS:**',
-      needsImprovement: '📉 **NEEDS IMPROVEMENT:**',
-      suggestions: '💡 **Suggestions:**',
-      qualityControl: '🔍 **QUALITY CONTROL ANALYSIS**',
-      keyMetrics: '📊 **Key Metrics:**',
-      wastePercentage: '• Waste Percentage:',
-      costImpact: '• Cost Impact: PKR',
-      qualityDeviation: '• Quality Deviation:',
-      rootCause: '🔍 **Root Cause Analysis:**',
-      primarySource: '• Primary Source:',
-      issue: '• Issue: Quality control gaps and operator errors',
-      actionPlan: '🎯 **Action Plan:**',
-      qualityChecks: '2. Implement 2-point quality checks in',
-      monthlyAudits: '3. Monthly quality audits schedule karein',
-      trainingProgram: '4. Operator training program provide karein',
-      expectedResults: '📈 **Expected Results:**',
-      reduceWaste: '• Waste 40-50% reduce karein',
-      saveCost: '• ~PKR 5,000/day save karein',
-      improveQuality: '• Quality score 15-20% improve karein',
-      targetAnalysis: '🎯 **TARGET ACHIEVEMENT ANALYSIS**',
-      currentStatus: '📊 **Current Status:**',
-      target: '• Target:',
-      achieved: '• Achieved:',
-      achievement: '• Achievement:',
-      exceeded: '🟢 EXCEEDED',
-      onTrack: '🟡 ON TRACK',
-      gapToClose: '⚠️ **Gap to Close:**',
-      dailyTarget: '• Daily target:',
-      daysRemaining: '• Days remaining:',
-      priority: '• Priority: Production capacity increase karein',
-      greatNews: '✅ **Great News!** Target exceeded!',
-      bonusPotential: '• Bonus potential: Available',
-      teamMorale: '• Team morale: High',
-      raiseTarget: '• Next target raise karne par ghoor karein',
-      trendPrediction: '📈 **TREND PREDICTION & FORECAST**',
-      predictedTrend: '🔮 **Predicted Trend:**',
-      confidenceLevel: '📊 **Confidence Level:**',
-      avgProduction: '📉 **Avg Production:**',
-      avgEfficiency: '⚡ **Avg Efficiency:**',
-      analysis: '💡 **Analysis:**',
-      upwardTrend: '✅ Production upward trend mein hai',
-      maintainMomentum: '✅ Current momentum maintain karein',
-      stableGrowth: '⚠️ Production stable hai lekin growth zaroori hai',
-      implementOptimization: '⚠️ Optimization measures implement karein',
-      recommendations: '🎯 **Recommendations:**',
-      monitorTrends: '• Daily trends monitor karte rahein',
-      adjustTargets: '• Production targets quarterly adjust karein',
-      planCapacity: '• Capacity expansion plan karein agar zaroorat ho',
-      companyComparison: '🏭 **COMPANY PERFORMANCE COMPARISON**',
-      keyInsight: '💡 **Key Insight:**',
-      leadingWith: 'leading hai',
-      smartRecommendations: '💡 **SMART RECOMMENDATIONS**',
-      criticalActNow: '🔴 **CRITICAL (Act Now):**',
-      highPriority: '🟠 **HIGH PRIORITY:**',
-      impact: 'Impact:',
-    }
+    deptRanking: '📊 **DEPARTMENT PERFORMANCE RANKING**',
+    production: '📈 Production',
+    efficiency: '⚡ Efficiency',
+    workers: '👥 Workers',
+    quality: '📊 Quality',
+    keyInsights: '💡 **Key Insights:**',
+    topPerformer: 'is top performer with',
+    units: 'units',
+    needsSupport: 'needs support -',
+    recommendation: '🎯 **Recommendation:**',
+    crossTraining: '• Cross-training program for',
+    deptImprovement: '• Expected improvement: 8-12% efficiency boost',
+    lineEfficiency: '⚙️ **LINE EFFICIENCY ANALYSIS**',
+    criticalIssues: '🔴 **CRITICAL ISSUES:**',
+    gap: 'Gap:',
+    atRisk: '🟡 **AT RISK (Below 80%):**',
+    performingWell: '🟢 **PERFORMING WELL (100%+):**',
+    keepUp: '- Keep up!',
+    insight: '💡 **Insight:**',
+    totalLines: '• Total lines analyzed:',
+    criticalLines: '• Critical lines:',
+    atRiskLines: '• At-risk lines:',
+    healthyLines: '• Healthy lines:',
+    suggestedActions: '🔧 **Suggested Actions:**',
+    action1: '1. Immediate maintenance on critical lines',
+    action2: '2. Worker reallocation to high-efficiency lines',
+    action3: '3. Equipment inspection and upgrade planning',
+    workerOptimization: '👥 **WORKER PLACEMENT OPTIMIZATION**',
+    topPerformers: '⭐ **TOP PERFORMERS:**',
+    needsImprovement: '📉 **NEEDS IMPROVEMENT:**',
+    suggestions: '💡 **Suggestions:**',
+    qualityControl: '🔍 **QUALITY CONTROL ANALYSIS**',
+    keyMetrics: '📊 **Key Metrics:**',
+    wastePercentage: '• Waste Percentage:',
+    costImpact: '• Cost Impact: PKR',
+    qualityDeviation: '• Quality Deviation:',
+    rootCause: '🔍 **Root Cause Analysis:**',
+    primarySource: '• Primary Source:',
+    issue: '• Issue: Quality control gaps and operator errors',
+    actionPlan: '🎯 **Action Plan:**',
+    qualityChecks: '2. Implement 2-point quality checks in',
+    monthlyAudits: '3. Schedule monthly quality audits',
+    trainingProgram: '4. Provide operator training program',
+    expectedResults: '📈 **Expected Results:**',
+    reduceWaste: '• Reduce waste by 40-50%',
+    saveCost: '• Save ~PKR 5,000/day',
+    improveQuality: '• Improve quality score by 15-20%',
+    targetAnalysis: '🎯 **TARGET ACHIEVEMENT ANALYSIS**',
+    currentStatus: '📊 **Current Status:**',
+    target: '• Target:',
+    achieved: '• Achieved:',
+    achievement: '• Achievement:',
+    exceeded: '🟢 EXCEEDED',
+    onTrack: '🟡 ON TRACK',
+    gapToClose: '⚠️ **Gap to Close:**',
+    dailyTarget: '• Daily target:',
+    daysRemaining: '• Days remaining:',
+    priority: '• Priority: Increase production capacity',
+    greatNews: '✅ **Great News!** Target exceeded!',
+    bonusPotential: '• Bonus potential: Available',
+    teamMorale: '• Team morale: High',
+    raiseTarget: '• Consider raising next target',
+    trendPrediction: '📈 **TREND PREDICTION & FORECAST**',
+    predictedTrend: '🔮 **Predicted Trend:**',
+    confidenceLevel: '📊 **Confidence Level:**',
+    avgProduction: '📉 **Avg Production:**',
+    avgEfficiency: '⚡ **Avg Efficiency:**',
+    analysis: '💡 **Analysis:**',
+    upwardTrend: '✅ Production is in an upward trend',
+    maintainMomentum: '✅ Maintain current momentum',
+    stableGrowth: '⚠️ Production is stable but growth is needed',
+    implementOptimization: '⚠️ Implement optimization measures',
+    recommendations: '🎯 **Recommendations:**',
+    monitorTrends: '• Continue monitoring trends daily',
+    adjustTargets: '• Adjust production targets quarterly',
+    planCapacity: '• Plan capacity expansion if needed',
+    companyComparison: '🏭 **COMPANY PERFORMANCE COMPARISON**',
+    keyInsight: '💡 **Key Insight:**',
+    leadingWith: 'is leading with',
+    smartRecommendations: '💡 **SMART RECOMMENDATIONS**',
+    criticalActNow: '🔴 **CRITICAL (Act Now):**',
+    highPriority: '🟠 **HIGH PRIORITY:**',
+    impact: 'Impact:',
+    department: 'department',
+    totalEfficiency: '🏭 **TOTAL EFFICIENCY**',
+    totalVariance: '📊 **TOTAL VARIANCE**',
+    companyComparisonTitle: '🏢 **COMPANY COMPARISON**',
+    departmentComparisonTitle: '🏢 **DEPARTMENT COMPARISON**',
   };
 
-  let text = translations[lang]?.[key] || translations.en[key] || key;
+  let text = translations[key] || key;
   if (params) {
     Object.keys(params).forEach(k => {
       text = text.replace(`{${k}}`, params[k]);
@@ -209,42 +132,41 @@ const t = (key: string, params?: any, lang: 'en' | 'ur' = 'en'): string => {
   return text;
 };
 
-// ===== DEPARTMENT ANALYSIS RESPONSE =====
+// ===== DEPARTMENT ANALYSIS =====
 export const formatDepartmentAnalysis = (
   filterData: any[],
-  kpiData: any,
-  lang: 'en' | 'ur' = 'en'
+  kpiData: any
 ): FormattedResponse => {
-  const analysis = analyzeDepartmentPerformance(filterData, kpiData);
+  const analysis: DepartmentAnalysis[] = analyzeDepartmentPerformance(filterData, kpiData);
 
-  let response = `${t('deptRanking', undefined, lang)}\n\n`;
+  let response = `${t('deptRanking')}\n\n`;
 
   analysis.forEach((dept, idx) => {
     const emoji = getDepartmentEmoji(dept.name);
     const statusIcon = getStatusIcon(dept.efficiency, 100);
 
     response += `${idx + 1}️⃣ ${emoji} **${dept.name}** ${statusIcon}\n`;
-    response += `   ${t('production', undefined, lang)}: ${dept.totalProduction.toLocaleString()} ${t('units', undefined, lang)}\n`;
-    response += `   ${t('efficiency', undefined, lang)}: ${dept.efficiency.toFixed(1)}%\n`;
-    response += `   ${t('workers', undefined, lang)}: ${dept.workerCount}\n`;
-    response += `   ${t('quality', undefined, lang)}: ${dept.qualityScore.toFixed(1)}\n\n`;
+    response += `   ${t('production')}: ${dept.totalProduction.toLocaleString()} ${t('units')}\n`;
+    response += `   ${t('efficiency')}: ${dept.efficiency.toFixed(1)}%\n`;
+    response += `   ${t('workers')}: ${dept.workerCount}\n`;
+    response += `   ${t('quality')}: ${dept.qualityScore.toFixed(1)}\n\n`;
   });
 
   const topDept = analysis[0];
   const bottomDept = analysis[analysis.length - 1];
 
-  response += `${t('keyInsights', undefined, lang)}\n`;
-  response += `✅ ${topDept.name} ${t('topPerformer', undefined, lang)} ${topDept.totalProduction.toLocaleString()} ${t('units', undefined, lang)}\n`;
-  response += `⚠️ ${bottomDept.name} ${t('needsSupport', undefined, lang)} ${bottomDept.efficiency.toFixed(1)}% ${t('efficiency', undefined, lang)}\n\n`;
+  response += `${t('keyInsights')}\n`;
+  response += `✅ ${topDept.name} ${t('topPerformer')} ${topDept.totalProduction.toLocaleString()} ${t('units')}\n`;
+  response += `⚠️ ${bottomDept.name} ${t('needsSupport')} ${bottomDept.efficiency.toFixed(1)}% ${t('efficiency')}\n\n`;
 
-  response += `${t('recommendation', undefined, lang)}\n`;
-  response += `${t('crossTraining', undefined, lang)} ${bottomDept.name} ${t('department', undefined, lang)}\n`;
-  response += `${t('deptImprovement', undefined, lang)}\n`;
+  response += `${t('recommendation')}\n`;
+  response += `${t('crossTraining')} ${bottomDept.name} ${t('department')}\n`;
+  response += `${t('deptImprovement')}\n`;
 
   return {
     text: response,
     type: 'analysis',
-    chartData: analysis,
+    chartData: analysis.map(d => ({ name: d.name, value: d.totalProduction })),
     showChart: true,
   };
 };
@@ -252,26 +174,30 @@ export const formatDepartmentAnalysis = (
 // ===== LINE BOTTLENECK ANALYSIS =====
 export const formatLineBottleneckAnalysis = (
   filterData: any[],
-  kpiData: any,
-  lang: 'en' | 'ur' = 'en'
+  kpiData: any
 ): FormattedResponse => {
-  const lines = detectLineBottlenecks(filterData, kpiData);
+  const lines: LineBottleneck[] = detectLineBottlenecks(filterData, kpiData);
   const bottlenecks = lines.filter((l) => l.bottleneck);
   const critical = lines.filter((l) => l.status === 'critical');
 
-  let response = `${t('lineEfficiency', undefined, lang)}\n\n`;
+  let response = `${t('lineEfficiency')}\n\n`;
 
   if (critical.length > 0) {
-    response += `${t('criticalIssues', undefined, lang)}\n`;
+    response += `${t('criticalIssues')}\n`;
     critical.forEach((line) => {
-      response += `• ${line.lineCode}: ${line.efficiency.toFixed(1)}% (${t('gap', undefined, lang)} ${(100 - line.efficiency).toFixed(1)}%)\n`;
-      response += `  Operations: ${line.affectedOperations.slice(0, 3).join(', ')}\n\n`;
+      response += `• ${line.lineCode}: ${line.efficiency.toFixed(1)}% (${t('gap')} ${(100 - line.efficiency).toFixed(1)}%)\n`;
+      const affected = line.affectedOperations.slice(0, 3);
+      if (affected.length > 0) {
+        response += `  Operations: ${affected.join(', ')}\n`;
+      }
+      response += '\n';
     });
   }
 
-  if (bottlenecks.length > 0) {
-    response += `${t('atRisk', undefined, lang)}\n`;
-    bottlenecks.slice(0, 3).forEach((line) => {
+  const atRisk = lines.filter(l => l.status === 'critical');
+  if (atRisk.length > 0) {
+    response += `${t('atRisk')}\n`;
+    atRisk.slice(0, 3).forEach((line) => {
       response += `• ${line.lineCode}: ${line.efficiency.toFixed(1)}%\n`;
     });
     response += '\n';
@@ -279,28 +205,28 @@ export const formatLineBottleneckAnalysis = (
 
   const excellent = lines.filter((l) => l.status === 'excellent');
   if (excellent.length > 0) {
-    response += `${t('performingWell', undefined, lang)}\n`;
+    response += `${t('performingWell')}\n`;
     excellent.forEach((line) => {
-      response += `✅ ${line.lineCode}: ${line.efficiency.toFixed(1)}% ${t('keepUp', undefined, lang)}\n`;
+      response += `✅ ${line.lineCode}: ${line.efficiency.toFixed(1)}% ${t('keepUp')}\n`;
     });
     response += '\n';
   }
 
-  response += `${t('insight', undefined, lang)}\n`;
-  response += `${t('totalLines', undefined, lang)} ${lines.length}\n`;
-  response += `${t('criticalLines', undefined, lang)} ${critical.length}\n`;
-  response += `${t('atRiskLines', undefined, lang)} ${bottlenecks.length}\n`;
-  response += `${t('healthyLines', undefined, lang)} ${excellent.length}\n\n`;
+  response += `${t('insight')}\n`;
+  response += `${t('totalLines')} ${lines.length}\n`;
+  response += `${t('criticalLines')} ${critical.length}\n`;
+  response += `${t('atRiskLines')} ${atRisk.length}\n`;
+  response += `${t('healthyLines')} ${excellent.length}\n\n`;
 
-  response += `${t('suggestedActions', undefined, lang)}\n`;
-  response += `${t('action1', undefined, lang)}\n`;
-  response += `${t('action2', undefined, lang)}\n`;
-  response += `${t('action3', undefined, lang)}\n`;
+  response += `${t('suggestedActions')}\n`;
+  response += `${t('action1')}\n`;
+  response += `${t('action2')}\n`;
+  response += `${t('action3')}\n`;
 
   return {
     text: response,
     type: 'analysis',
-    chartData: lines,
+    chartData: lines.map(l => ({ name: l.lineCode, value: l.efficiency })),
     showChart: true,
   };
 };
@@ -308,27 +234,26 @@ export const formatLineBottleneckAnalysis = (
 // ===== WORKER OPTIMIZATION =====
 export const formatWorkerOptimization = (
   filterData: any[],
-  kpiData: any,
-  lang: 'en' | 'ur' = 'en'
+  kpiData: any
 ): FormattedResponse => {
   const optimization = optimizeWorkerPlacement(filterData, kpiData);
 
-  let response = `${t('workerOptimization', undefined, lang)}\n\n`;
+  let response = `${t('workerOptimization')}\n\n`;
 
-  response += `${t('topPerformers', undefined, lang)}\n`;
+  response += `${t('topPerformers')}\n`;
   optimization.topPerformers.forEach((worker, idx) => {
     response += `${idx + 1}. ${worker.name} (${worker.department})\n`;
-    response += `   ${t('efficiency', undefined, lang)}: ${worker.efficiency.toFixed(1)}%\n`;
-    response += `   ${t('production', undefined, lang)}: ${worker.production} ${t('units', undefined, lang)}\n\n`;
+    response += `   ${t('efficiency')}: ${worker.efficiency.toFixed(1)}%\n`;
+    response += `   ${t('production')}: ${worker.production} ${t('units')}\n\n`;
   });
 
-  response += `${t('needsImprovement', undefined, lang)}\n`;
+  response += `${t('needsImprovement')}\n`;
   optimization.needsImprovement.forEach((worker) => {
-    response += `• ${worker.name} - ${worker.efficiency.toFixed(1)}% ${t('efficiency', undefined, lang)}\n`;
+    response += `• ${worker.name} - ${worker.efficiency.toFixed(1)}% ${t('efficiency')}\n`;
   });
   response += '\n';
 
-  response += `${t('suggestions', undefined, lang)}\n`;
+  response += `${t('suggestions')}\n`;
   optimization.suggestions.forEach((suggestion) => {
     response += `• ${suggestion}\n`;
   });
@@ -344,32 +269,31 @@ export const formatWorkerOptimization = (
 // ===== QUALITY ANALYSIS =====
 export const formatQualityAnalysis = (
   filterData: any[],
-  kpiData: any,
-  lang: 'en' | 'ur' = 'en'
+  kpiData: any
 ): FormattedResponse => {
-  const quality = analyzeQuality(filterData, kpiData);
+  const quality: QualityAnalysis = analyzeQuality(filterData, kpiData);
 
-  let response = `${t('qualityControl', undefined, lang)}\n\n`;
+  let response = `${t('qualityControl')}\n\n`;
 
-  response += `${t('keyMetrics', undefined, lang)}\n`;
-  response += `${t('wastePercentage', undefined, lang)} ${quality.wastePercentage}%\n`;
-  response += `${t('costImpact', undefined, lang)} ${quality.costImpact.toLocaleString()}\n`;
-  response += `${t('qualityDeviation', undefined, lang)} ${quality.overallQualityDeviation}%\n\n`;
+  response += `${t('keyMetrics')}\n`;
+  response += `${t('wastePercentage')} ${quality.wastePercentage}%\n`;
+  response += `${t('costImpact')} ${quality.costImpact.toLocaleString()}\n`;
+  response += `${t('qualityDeviation')} ${quality.overallQualityDeviation}%\n\n`;
 
-  response += `${t('rootCause', undefined, lang)}\n`;
-  response += `${t('primarySource', undefined, lang)} ${quality.topWasteSource} ${t('department', undefined, lang)}\n`;
-  response += `${t('issue', undefined, lang)}\n\n`;
+  response += `${t('rootCause')}\n`;
+  response += `${t('primarySource')} ${quality.topWasteSource} ${t('department')}\n`;
+  response += `${t('issue')}\n\n`;
 
-  response += `${t('actionPlan', undefined, lang)}\n`;
+  response += `${t('actionPlan')}\n`;
   response += `1. ${quality.recommendation}\n`;
-  response += `${t('qualityChecks', undefined, lang)} ${quality.topWasteSource}\n`;
-  response += `${t('monthlyAudits', undefined, lang)}\n`;
-  response += `${t('trainingProgram', undefined, lang)}\n\n`;
+  response += `${t('qualityChecks')} ${quality.topWasteSource}\n`;
+  response += `${t('monthlyAudits')}\n`;
+  response += `${t('trainingProgram')}\n\n`;
 
-  response += `${t('expectedResults', undefined, lang)}\n`;
-  response += `${t('reduceWaste', undefined, lang)}\n`;
-  response += `${t('saveCost', undefined, lang)}\n`;
-  response += `${t('improveQuality', undefined, lang)}\n`;
+  response += `${t('expectedResults')}\n`;
+  response += `${t('reduceWaste')}\n`;
+  response += `${t('saveCost')}\n`;
+  response += `${t('improveQuality')}\n`;
 
   return {
     text: response,
@@ -379,34 +303,33 @@ export const formatQualityAnalysis = (
   };
 };
 
-// ===== TARGET ACHIEVEMENT =====
+// ===== TARGET ANALYSIS =====
 export const formatTargetAnalysis = (
   filterData: any[],
-  kpiData: any,
-  lang: 'en' | 'ur' = 'en'
+  kpiData: any
 ): FormattedResponse => {
-  const target = analyzeTargetAchievement(filterData, kpiData);
+  const target: TargetAnalysis = analyzeTargetAchievement(filterData, kpiData);
 
-  let response = `${t('targetAnalysis', undefined, lang)}\n\n`;
+  let response = `${t('targetAnalysis')}\n\n`;
 
-  response += `${t('currentStatus', undefined, lang)}\n`;
-  response += `${t('target', undefined, lang)} ${target.target.toLocaleString()} ${t('units', undefined, lang)}\n`;
-  response += `${t('achieved', undefined, lang)} ${target.totalProduction.toLocaleString()} ${t('units', undefined, lang)}\n`;
-  response += `${t('achievement', undefined, lang)} ${target.achievement}% ${target.achievement >= 100 ? t('exceeded', undefined, lang) : t('onTrack', undefined, lang)}\n`;
-  response += `• ${t('gap', undefined, lang)} ${Math.abs(target.target - target.totalProduction).toLocaleString()} ${t('units', undefined, lang)}\n\n`;
+  response += `${t('currentStatus')}\n`;
+  response += `${t('target')} ${target.target.toLocaleString()} ${t('units')}\n`;
+  response += `${t('achieved')} ${target.totalProduction.toLocaleString()} ${t('units')}\n`;
+  response += `${t('achievement')} ${target.achievement}% ${target.achievement >= 100 ? t('exceeded') : t('onTrack')}\n`;
+  response += `• ${t('gap')} ${Math.abs(target.target - target.totalProduction).toLocaleString()} ${t('units')}\n\n`;
 
   if (target.achievement >= 100) {
-    response += `${t('greatNews', undefined, lang)}\n`;
-    response += `${t('bonusPotential', undefined, lang)}\n`;
-    response += `${t('teamMorale', undefined, lang)}\n`;
-    response += `${t('raiseTarget', undefined, lang)}\n`;
+    response += `${t('greatNews')}\n`;
+    response += `${t('bonusPotential')}\n`;
+    response += `${t('teamMorale')}\n`;
+    response += `${t('raiseTarget')}\n`;
   } else {
-    response += `${t('gapToClose', undefined, lang)}\n`;
+    response += `${t('gapToClose')}\n`;
     const daysRemaining = 5;
     const dailyRequired = Math.ceil((target.target - target.totalProduction) / daysRemaining);
-    response += `${t('dailyTarget', undefined, lang)} ${dailyRequired.toLocaleString()} ${t('units', undefined, lang)}\n`;
-    response += `${t('daysRemaining', undefined, lang)} ${daysRemaining}\n`;
-    response += `${t('priority', undefined, lang)}\n`;
+    response += `${t('dailyTarget')} ${dailyRequired.toLocaleString()} ${t('units')}\n`;
+    response += `${t('daysRemaining')} ${daysRemaining}\n`;
+    response += `${t('priority')}\n`;
   }
 
   return {
@@ -415,34 +338,33 @@ export const formatTargetAnalysis = (
   };
 };
 
-// ===== TREND PREDICTION =====
+// ===== TREND ANALYSIS =====
 export const formatTrendAnalysis = (
   filterData: any[],
-  kpiData: any,
-  lang: 'en' | 'ur' = 'en'
+  kpiData: any
 ): FormattedResponse => {
-  const trend = predictTrend(filterData, kpiData);
+  const trend: TrendAnalysis = predictTrend(filterData, kpiData);
 
-  let response = `${t('trendPrediction', undefined, lang)}\n\n`;
+  let response = `${t('trendPrediction')}\n\n`;
 
-  response += `${t('predictedTrend', undefined, lang)} ${trend.trend}\n`;
-  response += `${t('confidenceLevel', undefined, lang)} ${trend.confidence}%\n`;
-  response += `${t('avgProduction', undefined, lang)} ${trend.avgProduction.toFixed(0)} ${t('units', undefined, lang)}\n`;
-  response += `${t('avgEfficiency', undefined, lang)} ${trend.avgEfficiency.toFixed(1)}%\n\n`;
+  response += `${t('predictedTrend')} ${trend.trend}\n`;
+  response += `${t('confidenceLevel')} ${trend.confidence}%\n`;
+  response += `${t('avgProduction')} ${trend.avgProduction.toFixed(0)} ${t('units')}\n`;
+  response += `${t('avgEfficiency')} ${trend.avgEfficiency.toFixed(1)}%\n\n`;
 
-  response += `${t('analysis', undefined, lang)}\n`;
+  response += `${t('analysis')}\n`;
   if (trend.avgProduction > 500) {
-    response += `${t('upwardTrend', undefined, lang)}\n`;
-    response += `${t('maintainMomentum', undefined, lang)}\n`;
+    response += `${t('upwardTrend')}\n`;
+    response += `${t('maintainMomentum')}\n`;
   } else {
-    response += `${t('stableGrowth', undefined, lang)}\n`;
-    response += `${t('implementOptimization', undefined, lang)}\n`;
+    response += `${t('stableGrowth')}\n`;
+    response += `${t('implementOptimization')}\n`;
   }
 
-  response += `\n${t('recommendations', undefined, lang)}\n`;
-  response += `${t('monitorTrends', undefined, lang)}\n`;
-  response += `${t('adjustTargets', undefined, lang)}\n`;
-  response += `${t('planCapacity', undefined, lang)}\n`;
+  response += `\n${t('recommendations')}\n`;
+  response += `${t('monitorTrends')}\n`;
+  response += `${t('adjustTargets')}\n`;
+  response += `${t('planCapacity')}\n`;
 
   return {
     text: response,
@@ -453,29 +375,28 @@ export const formatTrendAnalysis = (
 // ===== COMPANY COMPARISON =====
 export const formatCompanyComparison = (
   filterData: any[],
-  kpiData: any,
-  lang: 'en' | 'ur' = 'en'
+  kpiData: any
 ): FormattedResponse => {
-  const comparison = compareCompanies(filterData, kpiData);
+  const comparison: CompanyComparison[] = compareCompanies(filterData, kpiData);
 
-  let response = `${t('companyComparison', undefined, lang)}\n\n`;
+  let response = `${t('companyComparison')}\n\n`;
 
   comparison.forEach((company, idx) => {
     const medal = idx === 0 ? '🥇' : idx === 1 ? '🥈' : '🥉';
     response += `${medal} **${company.name}**\n`;
-    response += `   ${t('workers', undefined, lang)}: ${company.workers}\n`;
-    response += `   ${t('efficiency', undefined, lang)}: ${company.avgEfficiency.toFixed(1)}%\n`;
-    response += `   ${t('production', undefined, lang)}: ${company.totalProduction.toLocaleString()} ${t('units', undefined, lang)}\n\n`;
+    response += `   ${t('workers')}: ${company.workers}\n`;
+    response += `   ${t('efficiency')}: ${company.avgEfficiency.toFixed(1)}%\n`;
+    response += `   ${t('production')}: ${company.totalProduction.toLocaleString()} ${t('units')}\n\n`;
   });
 
-  response += `${t('keyInsight', undefined, lang)}\n`;
+  response += `${t('keyInsight')}\n`;
   const topCompany = comparison[0];
-  response += `✅ ${topCompany.name} ${t('leadingWith', undefined, lang)} ${topCompany.avgEfficiency.toFixed(1)}% ${t('efficiency', undefined, lang)}\n`;
+  response += `✅ ${topCompany.name} ${t('leadingWith')} ${topCompany.avgEfficiency.toFixed(1)}% ${t('efficiency')}\n`;
 
   return {
     text: response,
     type: 'analysis',
-    chartData: comparison,
+    chartData: comparison.map(c => ({ name: c.name, value: c.totalProduction })),
     showChart: true,
   };
 };
@@ -483,30 +404,37 @@ export const formatCompanyComparison = (
 // ===== SMART RECOMMENDATIONS =====
 export const formatSmartRecommendations = (
   filterData: any[],
-  kpiData: any,
-  lang: 'en' | 'ur' = 'en'
+  kpiData: any
 ): FormattedResponse => {
-  const recommendations = generateSmartRecommendations(filterData, kpiData);
+  const recommendations: Recommendation[] = generateSmartRecommendations(filterData, kpiData);
 
-  let response = `${t('smartRecommendations', undefined, lang)}\n\n`;
+  let response = `${t('smartRecommendations')}\n\n`;
 
   const critical = recommendations.filter((r) => r.priority === 'critical');
   const high = recommendations.filter((r) => r.priority === 'high');
 
   if (critical.length > 0) {
-    response += `${t('criticalActNow', undefined, lang)}\n`;
+    response += `${t('criticalActNow')}\n`;
     critical.forEach((rec, idx) => {
       response += `${idx + 1}. ${rec.action}\n`;
-      response += `   ${t('impact', undefined, lang)}: ${rec.impact}\n\n`;
+      response += `   ${t('impact')}: ${rec.impact}\n\n`;
     });
   }
 
   if (high.length > 0) {
-    response += `${t('highPriority', undefined, lang)}\n`;
+    response += `${t('highPriority')}\n`;
     high.forEach((rec, idx) => {
       response += `${idx + 1}. ${rec.action}\n`;
-      response += `   ${t('impact', undefined, lang)}: ${rec.impact}\n\n`;
+      response += `   ${t('impact')}: ${rec.impact}\n\n`;
     });
+  }
+
+  if (critical.length === 0 && high.length === 0) {
+    response += '✅ **All systems running optimally!**\n\n';
+    response += '💡 **Suggestions for continuous improvement:**\n';
+    response += '• Continue monitoring KPIs daily\n';
+    response += '• Regular team performance reviews\n';
+    response += '• Explore new process optimization techniques\n';
   }
 
   return {

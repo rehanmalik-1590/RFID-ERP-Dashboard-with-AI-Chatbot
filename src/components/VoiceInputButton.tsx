@@ -1,11 +1,12 @@
-// ....VoiceInputButton.tsx file .......................
-import React, { useState, useRef, useEffect } from 'react';
+// VoiceInputButton.tsx - Complete Updated File
+import React, { useState, useRef, useEffect, useCallback } from 'react';
 import type { VoiceState, VoiceConfig } from '../services/chatbotVoiceHandler';
 import {
   Mic as MicIcon,
   Stop as StopIcon,
+  VolumeUp as VolumeUpIcon,
 } from '@mui/icons-material';
-import { IconButton, Tooltip, CircularProgress, Box } from '@mui/material';
+import { IconButton, Tooltip, CircularProgress, Box, Chip } from '@mui/material';
 import {
   initVoiceRecognition,
   startVoiceListening,
@@ -35,6 +36,7 @@ const VoiceInputButton: React.FC<VoiceInputButtonProps> = ({
     confidence: 0,
   });
   const [isSupported, setIsSupported] = useState(true);
+  const [isProcessing, setIsProcessing] = useState(false);
   const recognitionRef = useRef<any>(null);
   const autoRestartTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -49,6 +51,19 @@ const VoiceInputButton: React.FC<VoiceInputButtonProps> = ({
         recognitionRef.current = init.recognition;
       }
     }
+
+    // Cleanup on unmount
+    return () => {
+      if (autoRestartTimeoutRef.current) {
+        clearTimeout(autoRestartTimeoutRef.current);
+        autoRestartTimeoutRef.current = null;
+      }
+      if (recognitionRef.current) {
+        try {
+          recognitionRef.current.abort();
+        } catch (e) {}
+      }
+    };
   }, []);
 
   // Handle auto mode
@@ -60,7 +75,7 @@ const VoiceInputButton: React.FC<VoiceInputButtonProps> = ({
     }
   }, [autoMode]);
 
-  const startAutoListening = () => {
+  const startAutoListening = useCallback(() => {
     if (!recognitionRef.current) return;
 
     try {
@@ -75,7 +90,8 @@ const VoiceInputButton: React.FC<VoiceInputButtonProps> = ({
             finalTranscript += event.results[i][0].transcript;
           }
         }
-        if (finalTranscript.trim()) {
+        if (finalTranscript.trim() && !isProcessing) {
+          setIsProcessing(true);
           setIsListening(true);
           setVoiceState({
             isListening: true,
@@ -84,17 +100,16 @@ const VoiceInputButton: React.FC<VoiceInputButtonProps> = ({
             confidence: 100,
           });
           
-          // Process the transcript
           setTimeout(() => {
             onTranscript(finalTranscript.trim());
             setIsListening(false);
+            setIsProcessing(false);
           }, 300);
         }
       };
 
       recognitionRef.current.onerror = () => {
         if (autoMode) {
-          // Restart after error
           if (autoRestartTimeoutRef.current) {
             clearTimeout(autoRestartTimeoutRef.current);
           }
@@ -108,7 +123,6 @@ const VoiceInputButton: React.FC<VoiceInputButtonProps> = ({
 
       recognitionRef.current.onend = () => {
         if (autoMode) {
-          // Restart after end
           if (autoRestartTimeoutRef.current) {
             clearTimeout(autoRestartTimeoutRef.current);
           }
@@ -125,9 +139,9 @@ const VoiceInputButton: React.FC<VoiceInputButtonProps> = ({
     } catch (e) {
       console.log('Auto voice start error:', e);
     }
-  };
+  }, [autoMode, isProcessing, language, onTranscript]);
 
-  const stopAutoListening = () => {
+  const stopAutoListening = useCallback(() => {
     if (recognitionRef.current) {
       try {
         recognitionRef.current.stop();
@@ -139,10 +153,11 @@ const VoiceInputButton: React.FC<VoiceInputButtonProps> = ({
       autoRestartTimeoutRef.current = null;
     }
     setIsListening(false);
-  };
+    setIsProcessing(false);
+  }, []);
 
-  const handleStartListening = () => {
-    if (autoMode) return; // Don't allow manual when auto mode is on
+  const handleStartListening = useCallback(() => {
+    if (autoMode || isProcessing) return;
 
     if (!recognitionRef.current || !isSupported) {
       setVoiceState({
@@ -156,6 +171,7 @@ const VoiceInputButton: React.FC<VoiceInputButtonProps> = ({
     }
 
     setIsListening(true);
+    setIsProcessing(true);
 
     const config: VoiceConfig = {
       language,
@@ -172,24 +188,27 @@ const VoiceInputButton: React.FC<VoiceInputButtonProps> = ({
       },
       (transcript) => {
         setIsListening(false);
+        setIsProcessing(false);
         if (transcript && transcript.trim()) {
           onTranscript(transcript);
         }
       }
     );
-  };
+  }, [autoMode, isProcessing, isSupported, language, onTranscript]);
 
-  const handleStopListening = () => {
+  const handleStopListening = useCallback(() => {
     if (recognitionRef.current) {
       stopVoiceListening(recognitionRef.current);
       setIsListening(false);
+      setIsProcessing(false);
     }
-  };
+  }, []);
 
-  const handleAbort = () => {
+  const handleAbort = useCallback(() => {
     if (recognitionRef.current) {
       abortVoiceListening(recognitionRef.current);
       setIsListening(false);
+      setIsProcessing(false);
       setVoiceState({
         isListening: false,
         transcript: '',
@@ -197,7 +216,7 @@ const VoiceInputButton: React.FC<VoiceInputButtonProps> = ({
         confidence: 0,
       });
     }
-  };
+  }, []);
 
   if (!isSupported) {
     return (
@@ -212,22 +231,24 @@ const VoiceInputButton: React.FC<VoiceInputButtonProps> = ({
   }
 
   return (
-    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+    <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
       <Tooltip
         title={
           autoMode 
             ? 'Auto Voice is ON - Listening continuously'
             : isListening
             ? 'Listening... Click stop when done'
+            : isProcessing
+            ? 'Processing...'
             : 'Click to speak your question'
         }
       >
         <IconButton
           size="small"
           onClick={autoMode ? undefined : (isListening ? handleStopListening : handleStartListening)}
-          disabled={disabled || autoMode}
+          disabled={disabled || autoMode || isProcessing}
           sx={{
-            color: autoMode ? '#10b981' : (isListening ? '#d32f2f' : '#1976d2'),
+            color: autoMode ? '#10b981' : (isListening ? '#d32f2f' : (isProcessing ? '#f59e0b' : '#1976d2')),
             animation: (isListening || autoMode) ? 'pulse 1.5s infinite' : 'none',
             '@keyframes pulse': {
               '0%': { opacity: 1 },
@@ -242,7 +263,15 @@ const VoiceInputButton: React.FC<VoiceInputButtonProps> = ({
 
       {(isListening || autoMode) && (
         <>
-          <CircularProgress size={24} sx={{ color: autoMode ? '#10b981' : '#d32f2f' }} />
+          <CircularProgress 
+            size={20} 
+            sx={{ 
+              color: autoMode ? '#10b981' : '#d32f2f',
+              '& .MuiCircularProgress-circle': {
+                animationDuration: '800ms',
+              }
+            }} 
+          />
           {!autoMode && (
             <Tooltip title="Stop listening">
               <IconButton
@@ -255,26 +284,42 @@ const VoiceInputButton: React.FC<VoiceInputButtonProps> = ({
             </Tooltip>
           )}
           {autoMode && (
-            <Box sx={{ fontSize: '10px', color: '#10b981' }}>
-              ● Listening
-            </Box>
+            <Chip
+              label="● Listening"
+              size="small"
+              sx={{
+                height: 20,
+                fontSize: '8px',
+                bgcolor: 'rgba(16, 185, 129, 0.2)',
+                color: '#10b981',
+                border: '1px solid rgba(16, 185, 129, 0.3)',
+              }}
+            />
           )}
         </>
       )}
 
-      {voiceState.transcript && !isListening && !autoMode && (
+      {voiceState.transcript && !isListening && !autoMode && !isProcessing && (
         <Tooltip title={`Heard: ${voiceState.transcript}`}>
           <Box
             sx={{
-              fontSize: '10px',
-              color: '#666',
-              maxWidth: '120px',
+              fontSize: '9px',
+              color: '#94a3b8',
+              maxWidth: '100px',
               overflow: 'hidden',
               textOverflow: 'ellipsis',
               whiteSpace: 'nowrap',
             }}
           >
             {voiceState.transcript}
+          </Box>
+        </Tooltip>
+      )}
+
+      {voiceState.error && (
+        <Tooltip title={voiceState.error}>
+          <Box sx={{ color: '#ef4444', fontSize: '10px' }}>
+            ⚠️
           </Box>
         </Tooltip>
       )}

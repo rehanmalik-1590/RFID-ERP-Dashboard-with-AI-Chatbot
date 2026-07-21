@@ -1,15 +1,38 @@
-// ChatBot Query Processor
-// Processes natural language queries and extracts intent/entities
-// ......................chatbotQueryProcessor.ts file .............................
-export const processQuery = (query: string, lang: 'en' | 'ur' = 'en') => {
+// chatbotQueryProcessor.ts - Complete Updated File
+// chatbotQueryProcessor.ts - Fixed
+export interface ParsedQuery {
+  query: string;  // Add this property
+  intent: string;
+  entities: {
+    type: string;
+    count: number;
+    dataType: string;
+    specificId?: string;
+    onlyNames?: boolean;
+    chartType?: string;
+    isGraph?: boolean;
+    isComparison?: boolean;
+    isTotalEfficiency?: boolean;
+    isTotalVariance?: boolean;
+    isCompanyComparison?: boolean;
+    isDepartmentComparison?: boolean;
+  };
+  filters: {
+    efficiency: { min: number; max: number };
+    quality: { min: number; max: number };
+  };
+  isValid: boolean;
+}
+
+export const processQuery = (query: string): ParsedQuery => {
   const lowerQuery = query.toLowerCase();
 
-  const intent = detectIntent(lowerQuery, lang);
+  const intent = detectIntent(lowerQuery);
   const entities = extractEntities(lowerQuery);
   const filters = extractFilters(lowerQuery);
 
   return {
-    query,
+    query,  // Now this is valid
     intent,
     entities,
     filters,
@@ -17,34 +40,31 @@ export const processQuery = (query: string, lang: 'en' | 'ur' = 'en') => {
   };
 };
 
-const detectIntent = (query: string, lang: 'en' | 'ur' = 'en'): string => {
-  // Urdu keywords
-  const urKeywords = {
-    top: ['top', 'best', 'highest', 'ٹاپ', 'بہترین', 'سب سے اچھا'],
-    compare: ['compare', 'vs', 'versus', 'موازنہ', 'مقابلہ'],
-    problem: ['bottleneck', 'slow', 'issue', 'رکاوٹ', 'آہستہ', 'مسئلہ'],
-    quality: ['quality', 'waste', 'defect', 'کوالٹی', 'فضلہ', 'نقص'],
-    target: ['target', 'goal', 'ہدف', 'مقصد'],
-    trend: ['trend', 'forecast', 'رجحان', 'پیش گوئی'],
-    worker: ['worker', 'employee', 'staff', 'ورکر', 'ملازم', 'عملہ'],
-    department: ['department', 'section', 'team', 'ڈپارٹمنٹ', 'سیکشن', 'ٹیم'],
-    line: ['line', 'production', 'لائن', 'پیداوار'],
+const detectIntent = (query: string): string => {
+  const keywords: Record<string, string[]> = {
+    top: ['top', 'best', 'highest', 'max'],
+    low: ['low', 'worst', 'lowest', 'min'],
+    compare: ['compare', 'vs', 'versus', 'comparison', 'comparison'],
+    efficiency: ['efficiency', 'productivity', 'performance'],
+    variance: ['variance', 'deviation', 'difference', 'gap'],
+    quality: ['quality', 'waste', 'defect', 'reject'],
+    target: ['target', 'goal', 'achievement', 'plan'],
+    trend: ['trend', 'forecast', 'prediction', 'future'],
+    bottleneck: ['bottleneck', 'slow', 'issue', 'problem'],
+    worker: ['worker', 'employee', 'staff', 'labor'],
+    department: ['department', 'section', 'team', 'dept'],
+    line: ['line', 'production line', 'assembly'],
+    total: ['total', 'all', 'overview', 'summary', 'complete'],
+    help: ['help', 'what can you do', 'how to use', 'commands', 'support'],
   };
-
-  const allKeywords = { ...urKeywords };
   
-  // Check each intent
-  for (const [intent, keywords] of Object.entries(allKeywords)) {
-    for (const keyword of keywords) {
-      if (query.includes(keyword)) {
+  for (const [intent, words] of Object.entries(keywords)) {
+    for (const word of words) {
+      if (query.includes(word)) {
         return intent;
       }
     }
   }
-
-  // Check for specific phrases in Urdu
-  if (query.includes('سب سے') || query.includes('زیادہ')) return 'ranking';
-  if (query.includes('کم') || query.includes('کمزور')) return 'ranking';
   
   return 'unknown';
 };
@@ -54,23 +74,78 @@ const extractEntities = (query: string) => {
     type: 'general',
     count: 5,
     dataType: 'all',
+    onlyNames: false,
+    chartType: undefined as string | undefined,
+    isGraph: false,
+    isComparison: false,
+    isTotalEfficiency: false,
+    isTotalVariance: false,
+    isCompanyComparison: false,
+    isDepartmentComparison: false,
   };
 
-  // Extract count - supports English and Urdu numbers
-  const countMatch = query.match(/top\s*(\d+)|(\d+)\s*(workers|lines|departments|operations)/i);
+  // Extract count - FIXED: Exact count
+  const countMatch = query.match(/top\s*(\d+)|(\d+)\s*(workers|lines|departments|operations|records)/i);
   if (countMatch) {
-    entities.count = parseInt(countMatch[1] || countMatch[2]);
+    const count = parseInt(countMatch[1] || countMatch[2]);
+    if (!isNaN(count) && count > 0) {
+      entities.count = count;
+    }
+  }
+
+  // Only names
+  if (query.includes('only names') || query.includes('tell me names') || query.includes('names only') || query.includes('name bta do') || query.includes('only name')) {
+    entities.onlyNames = true;
+  }
+
+  // Chart type
+  if (query.includes('pie') || query.includes('pie chart')) entities.chartType = 'pie';
+  else if (query.includes('line') || query.includes('line chart')) entities.chartType = 'line';
+  else if (query.includes('bar') || query.includes('bar chart') || query.includes('graph') || query.includes('chart')) entities.chartType = 'bar';
+
+  // Graph
+  if (query.includes('graph') || query.includes('chart') || query.includes('show') || query.includes('visualize') || entities.chartType) {
+    entities.isGraph = true;
+  }
+
+  // Comparison
+  if (query.includes('comparison') || query.includes('compare') || query.includes('vs')) {
+    entities.isComparison = true;
+  }
+
+  // Total efficiency
+  if (query.includes('total efficiency') || query.includes('overall efficiency') || query.includes('factory efficiency')) {
+    entities.isTotalEfficiency = true;
+  }
+
+  // Total variance
+  if (query.includes('total variance') || query.includes('variance') || query.includes('production variance')) {
+    entities.isTotalVariance = true;
+  }
+
+  // Company comparison
+  if (query.includes('company comparison') || query.includes('compare companies') || query.includes('company wise')) {
+    entities.isCompanyComparison = true;
+  }
+
+  // Department comparison
+  if (query.includes('department comparison') || query.includes('compare departments') || query.includes('dept comparison')) {
+    entities.isDepartmentComparison = true;
   }
 
   // Extract data type
-  if (query.includes('worker') || query.includes('employee') || query.includes('ورکر') || query.includes('ملازم')) {
+  if (query.includes('worker') || query.includes('employee') || query.includes('staff')) {
     entities.dataType = 'worker';
-  } else if (query.includes('department') || query.includes('ڈپارٹمنٹ')) {
+  } else if (query.includes('department') || query.includes('dept') || query.includes('section')) {
     entities.dataType = 'department';
-  } else if (query.includes('line') || query.includes('لائن')) {
+  } else if (query.includes('line')) {
     entities.dataType = 'line';
-  } else if (query.includes('operation') || query.includes('آپریشن')) {
+  } else if (query.includes('operation')) {
     entities.dataType = 'operation';
+  } else if (query.includes('record') || query.includes('data')) {
+    entities.dataType = 'record';
+  } else if (query.includes('company')) {
+    entities.dataType = 'company';
   }
 
   return entities;
@@ -82,11 +157,9 @@ const extractFilters = (query: string) => {
     quality: { min: 0, max: 100 },
   };
 
-  if (query.includes('high') || query.includes('good') || query.includes('excellent') || 
-      query.includes('اچھا') || query.includes('بہترین')) {
+  if (query.includes('high') || query.includes('good') || query.includes('excellent')) {
     filters.efficiency.min = 80;
-  } else if (query.includes('low') || query.includes('poor') || 
-             query.includes('کم') || query.includes('خراب')) {
+  } else if (query.includes('low') || query.includes('poor')) {
     filters.efficiency.max = 50;
   }
 
@@ -94,9 +167,13 @@ const extractFilters = (query: string) => {
 };
 
 export const getCompanyName = (query: string): string => {
-  if (query.includes('PAK') || query.includes('pakistan') || query.includes('پاکستان')) return 'Pakistan';
-  if (query.includes('BD') || query.includes('bangladesh') || query.includes('بنگلہ دیش')) return 'Bangladesh';
-  if (query.includes('IND') || query.includes('india') || query.includes('انڈیا')) return 'India';
+  if (query.includes('PAK') || query.includes('pakistan')) return 'Pakistan';
+  if (query.includes('BD') || query.includes('bangladesh')) return 'Bangladesh';
+  if (query.includes('IND') || query.includes('india')) return 'India';
+  if (query.includes('SHG') || query.includes('shaheen')) return 'Shaheen Heritage Garments';
+  if (query.includes('MGI') || query.includes('maqbool')) return 'Maqbool Global Industries';
+  if (query.includes('ARF') || query.includes('arifeen')) return 'Arifeen Retail Fabrics';
+  if (query.includes('ZIM') || query.includes('zaman')) return 'Zaman International Mills';
   return 'All';
 };
 
@@ -126,13 +203,12 @@ export const getStatusIcon = (value: number, max: number): string => {
   return '🔴';
 };
 
-export const formatAnalysisResponse = (data: any, lang: 'en' | 'ur' = 'en'): string => {
+export const formatAnalysisResponse = (data: any): string => {
   let response = '';
 
   if (Array.isArray(data)) {
     data.forEach((item, idx) => {
-      const prefix = lang === 'ur' ? `${idx + 1}.` : `${idx + 1}.`;
-      response += `${prefix} ${item.name}: ${item.value}\n`;
+      response += `${idx + 1}. ${item.name}: ${item.value}\n`;
     });
   } else {
     response = JSON.stringify(data, null, 2);
